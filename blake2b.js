@@ -2,21 +2,7 @@
 // Adapted from the reference implementation in RFC7693
 // Ported to Javascript by DC - https://github.com/dcposch
 
-// For debugging: prints out hash state in the same format as the RFC
-// sample computation
-// function DebugPrint (label, arr) {
-//   var msg = '\n' + label + ' = '
-//   for (var i = 0; i < arr.length; i += 2) {
-//     msg += (0x100000000 + arr[i + 1]).toString(16).substring(1).toUpperCase()
-//     msg += (0x100000000 + arr[i]).toString(16).substring(1).toUpperCase()
-//     if (i % 6 === 4) {
-//       msg += '\n' + new Array(label.length + 4).join(' ')
-//     } else if (i < arr.length - 1) {
-//       msg += ' '
-//     }
-//   }
-//   console.log(msg)
-// }
+var util = require('./util')
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
@@ -152,9 +138,9 @@ function blake2b_compress (ctx, last) {
   // twelve rounds of mixing
   // uncomment the DebugPrint calls to log the computation
   // and match the RFC sample documentation
-  // DebugPrint('          m[16]', m)
+  // util.debugPrint('          m[16]', m, 64)
   for (i = 0; i < 12; i++) {
-    // DebugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v)
+    // util.debugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v, 64)
     B2B_G(0, 8, 16, 24, SIGMA82[i * 16 + 0], SIGMA82[i * 16 + 1])
     B2B_G(2, 10, 18, 26, SIGMA82[i * 16 + 2], SIGMA82[i * 16 + 3])
     B2B_G(4, 12, 20, 28, SIGMA82[i * 16 + 4], SIGMA82[i * 16 + 5])
@@ -164,12 +150,12 @@ function blake2b_compress (ctx, last) {
     B2B_G(4, 14, 16, 26, SIGMA82[i * 16 + 12], SIGMA82[i * 16 + 13])
     B2B_G(6, 8, 18, 28, SIGMA82[i * 16 + 14], SIGMA82[i * 16 + 15])
   }
-  // DebugPrint('   (i=12) v[16]', v)
+  // util.debugPrint('   (i=12) v[16]', v, 64)
 
   for (i = 0; i < 16; i++) {
     ctx.h[i] = ctx.h[i] ^ v[i] ^ v[i + 16]
   }
-// DebugPrint('h[8]', ctx.h)
+// util.debugPrint('h[8]', ctx.h, 64)
 }
 
 // Initialize the hashing context with optional key 'key'
@@ -249,16 +235,7 @@ function blake2b_final (ctx) {
 function blake2b (input, key, outlen) {
   // preprocess inputs
   outlen = outlen || 64
-  if (typeof (input) === 'string') {
-    var str = input
-    input = new Uint8Array(str.length)
-    for (var i = 0; i < str.length; i++) {
-      if (str.charCodeAt(i) > 255) {
-        throw new Error('Input must be an ASCII string or Uint8Array')
-      }
-      input[i] = str.charCodeAt(i)
-    }
-  }
+  input = util.normalizeInput(input)
 
   // do the math
   var ctx = blake2b_init(outlen, key)
@@ -276,9 +253,7 @@ function blake2b (input, key, outlen) {
 // - outlen - optional output length in bytes, default 64
 function blake2bHex (input, key, outlen) {
   var output = blake2b(input, key, outlen)
-  return Array.prototype.map.call(output, function (n) {
-    return (n < 16 ? '0' : '') + n.toString(16)
-  }).join('')
+  return util.toHex(output)
 }
 
 module.exports = {
