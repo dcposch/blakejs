@@ -1,0 +1,19 @@
+{
+  "name": "blakejs",
+  "version": "0.0.1",
+  "description": "Pure Javascript implementation of the BLAKE2B hash function",
+  "main": "blake2b.js",
+  "scripts": {
+    "test": "cat blake2b.js test_blake2b.js | node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcposch/blakejs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dcposch/blakejs/issues"
+  },
+  "homepage": "https://github.com/dcposch/blakejs#readme"
+}
