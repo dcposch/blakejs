@@ -4,7 +4,11 @@
   "description": "Pure Javascript implementation of the BLAKE2B hash function",
   "main": "blake2b.js",
   "scripts": {
-    "test": "cat blake2b.js test_blake2b.js | node"
+    "test": "standard && node test_blake2b.js"
+  },
+  "devDependencies": {
+    "standard": "*",
+    "tape": "*"
   },
   "repository": {
     "type": "git",
