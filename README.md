@@ -5,19 +5,37 @@ Pure Javascript implementation of the BLAKE2B hash function.
 
 ```js
 var Blake = require('blake')
+console.log(Blake.blake2bHex('hello world'))
+// prints ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923
+```
 
-// prints 00000000000000000000000000000000000000000000000000000000000000
-console.log(Blake.blake2bStringToHex('hello world'))
+API
+---
+Exports two functions:
 
-// ascii values for 'hello world'
-var input = new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100])
-var output = Blake.blake2b(input)
-var hex = Array.prototype.map.call(output, function(n) {
-  return (n < 16 ? '0' : '') + n.toString(16)
-}).join('')
+```js
+// Computes the BLAKE2B hash of a string or byte array, and returns a Uint8Array
+//
+// Returns a n-byte Uint8Array
+//
+// Parameters:
+// - input - the input bytes, as a Uint8Array or ASCII string
+// - key - optional key, either a 32 or 64-byte Uint8Array
+// - outlen - optional output length in bytes, default 64
+function blake2b(input, key, outlen) {
+    [...]
+}
 
-// prints the same thing again
-console.log(hex)
+// Computes the BLAKE2B hash of a string or byte array
+//
+// Returns an n-byte hash in hex, all lowercase
+//
+// Parameters:
+// - input - the input bytes, as a Uint8Array or ASCII string
+// - outlen - optional output length in bytes, default 64
+function blake2bHex(input, outlen) {
+    [...]
+}
 ```
 
 Limitations
