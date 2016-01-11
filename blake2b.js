@@ -20,21 +20,13 @@ function ROTR64 (x, y) {
   return [o0, o1]
 }
 
-// Little-endian byte access
-function B2B_GET32 (arr, i) {
-  return arr[i] ^
-  (arr[i + 1] << 8) ^
-  (arr[i + 2] << 16) ^
-  (arr[i + 3] << 24)
-}
-
 // Javascript is just disgusting...
 // var arr = new Uint32Array(10)
 // arr[0] = 0xffffffff
-// console.log(arr[0]) // prints 4 billion, all good
+// console.log(arr[0]) // prints ~4 billion, all good
 // console.log(arr[0] | 0) // prints -1
 //
-// So when working with 64-bit #s, the two 32-bit halves are signed int32s
+// So when working with 64-bit #s, the two 32-bit halves are *signed* int32s
 function ADD64 (a, b) {
   var o0 = a[0] + b[0]
   if (a[0] < 0) {
@@ -50,36 +42,122 @@ function ADD64 (a, b) {
   return new Uint32Array([o0, o1])
 }
 
-function XOR64 (a, b) {
-  var o0 = a[0] ^ b[0]
-  var o1 = a[1] ^ b[1]
-  return new Uint32Array([o0, o1])
+// For debugging: prints out hash state in the same format as the RFC
+// sample computation
+// function DebugPrint (label, arr) {
+//   var msg = '\n' + label + ' = '
+//   for (var i = 0; i < arr.length; i += 2) {
+//     msg += (0x100000000 + arr[i + 1]).toString(16).substring(1).toUpperCase()
+//     msg += (0x100000000 + arr[i]).toString(16).substring(1).toUpperCase()
+//     if (i % 6 === 4) {
+//       msg += '\n' + new Array(label.length + 4).join(' ')
+//     } else if (i < arr.length - 1) {
+//       msg += ' '
+//     }
+//   }
+//   console.log(msg)
+// }
+
+// 64-bit unsigned addition
+// Sets v[a,a+1] += v[b,b+1]
+// v should be a Uint32Array
+function ADD64AA (v, a, b) {
+  var o0 = v[a] + v[b]
+  var o1 = v[a + 1] + v[b + 1]
+  if (o0 >= 0x100000000) {
+    o1++
+  }
+  v[a] = o0
+  v[a + 1] = o1
+}
+
+// 64-bit unsigned addition
+// Sets v[a,a+1] += b
+// b0 is the low 32 bits of b, b1 represents the high 32 bits
+function ADD64AC (v, a, b0, b1) {
+  var o0 = v[a] + b0
+  if (b0 < 0) {
+    o0 += 0x100000000
+  }
+  var o1 = v[a + 1] + b1
+  if (o0 >= 0x100000000) {
+    o1++
+  }
+  v[a] = o0
+  v[a + 1] = o1
+}
+
+// 64-bit right rotation
+// Sets v[a,a+1] = x rotated to the right by y bits
+// b0 is the low 32 bits of b, b1 represents the high 32 bits
+function ROTR64A (v, a, x0, x1, y) {
+  v[a] = (y < 32 ? x0 >>> y : 0) ^
+    (y > 32 ? x1 >>> (y - 32) : 0) ^
+    (y > 32 ? x0 << (64 - y) : 0) ^
+    (y > 0 && y <= 32 ? x1 << (32 - y) : 0)
+  v[a + 1] = (y < 32 ? x1 >>> y : 0) ^
+    (y > 32 ? x0 >>> (y - 32) : 0) ^
+    (y > 32 ? x1 << (64 - y) : 0) ^
+    (y > 0 && y <= 32 ? x0 << (32 - y) : 0)
+}
+
+// Little-endian byte access
+function B2B_GET32 (arr, i) {
+  return (arr[i] ^
+    (arr[i + 1] << 8) ^
+    (arr[i + 2] << 16) ^
+    (arr[i + 3] << 24))
 }
 
 // G Mixing function.
-function B2B_G (v, a, b, c, d, x, y) {
-  v[a] = ADD64(ADD64(v[a], v[b]), x)
-  v[d] = ROTR64(XOR64(v[d], v[a]), 32)
-  v[c] = ADD64(v[c], v[d])
-  v[b] = ROTR64(XOR64(v[b], v[c]), 24)
-  v[a] = ADD64(ADD64(v[a], v[b]), y)
-  v[d] = ROTR64(XOR64(v[d], v[a]), 16)
-  v[c] = ADD64(v[c], v[d])
-  v[b] = ROTR64(XOR64(v[b], v[c]), 63)
+function B2B_G (v, m, a, b, c, d, ix, iy) {
+  // 64 -> 32 bit indices
+  a *= 2
+  b *= 2
+  c *= 2
+  d *= 2
+  ix *= 2
+  iy *= 2
+
+  var x0 = m[ix]
+  var x1 = m[ix + 1]
+  var y0 = m[iy]
+  var y1 = m[iy + 1]
+
+  ADD64AA(v, a, b) // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
+  ADD64AC(v, a, x0, x1) // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
+
+  var xor0 = v[d] ^ v[a]
+  var xor1 = v[d + 1] ^ v[a + 1]
+  ROTR64A(v, d, xor0, xor1, 32) // v[d,d+1] = <xor> rotated to the right by 32 bits
+
+  ADD64AA(v, c, d)
+
+  xor0 = v[b] ^ v[c]
+  xor1 = v[b + 1] ^ v[c + 1]
+  ROTR64A(v, b, xor0, xor1, 24)
+
+  ADD64AA(v, a, b)
+  ADD64AC(v, a, y0, y1)
+
+  xor0 = v[d] ^ v[a]
+  xor1 = v[d + 1] ^ v[a + 1]
+  ROTR64A(v, d, xor0, xor1, 16)
+
+  ADD64AA(v, c, d)
+
+  xor0 = v[b] ^ v[c]
+  xor1 = v[b + 1] ^ v[c + 1]
+  ROTR64A(v, b, xor0, xor1, 63)
 }
 
 // Initialization Vector.
 var BLAKE2B_IV32 = new Uint32Array([
-  0x6A09E667, 0xF3BCC908, 0xBB67AE85, 0x84CAA73B,
-  0x3C6EF372, 0xFE94F82B, 0xA54FF53A, 0x5F1D36F1,
-  0x510E527F, 0xADE682D1, 0x9B05688C, 0x2B3E6C1F,
-  0x1F83D9AB, 0xFB41BD6B, 0x5BE0CD19, 0x137E2179
+  0xF3BCC908, 0x6A09E667, 0x84CAA73B, 0xBB67AE85,
+  0xFE94F82B, 0x3C6EF372, 0x5F1D36F1, 0xA54FF53A,
+  0xADE682D1, 0x510E527F, 0x2B3E6C1F, 0x9B05688C,
+  0xFB41BD6B, 0x1F83D9AB, 0x137E2179, 0x5BE0CD19
 ])
-
-var BLAKE2B_IV64 = []
-for (var i = 0; i < BLAKE2B_IV32.length; i += 2) {
-  BLAKE2B_IV64.push([BLAKE2B_IV32[i + 1], BLAKE2B_IV32[i]])
-}
 
 var SIGMA8 = new Uint8Array([
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -99,47 +177,52 @@ var SIGMA8 = new Uint8Array([
 // Compression function. 'last' flag indicates last block.
 function blake2b_compress (ctx, last) {
   var i = 0
-  var v = new Array(16)
-  var m = new Array(16)
+  var v = new Uint32Array(32)
+  var m = new Uint32Array(32)
 
   // init work variables
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < 16; i++) {
     v[i] = ctx.h[i]
-    v[i + 8] = BLAKE2B_IV64[i]
+    v[i + 16] = BLAKE2B_IV32[i]
   }
 
   // low 64 bits of offset
-  v[12] = XOR64(v[12], [ctx.t, 0])
-  // high 64 bits
-  // v[13] = XOR64(v[13], ctx.t[1])
+  v[24] = v[24] ^ ctx.t
+  v[25] = v[25] ^ (ctx.t / 0x100000000)
+  // high 64 bits not supported, offset may not be higher than ~2^52
+
   // last block flag set ?
   if (last) {
-    v[14] = [~v[14][0], ~v[14][1]]
+    v[28] = ~v[28]
+    v[29] = ~v[29]
   }
 
   // get little-endian words
-  for (i = 0; i < 16; i++) {
-    m[i] = [
-      B2B_GET32(ctx.b, 8 * i),
-      B2B_GET32(ctx.b, 8 * i + 4)
-    ]
+  for (i = 0; i < 32; i++) {
+    m[i] = B2B_GET32(ctx.b, 4 * i)
   }
 
   // twelve rounds of mixing
+  // uncomment the DebugPrint calls to log the computation
+  // and match the RFC sample documentation
+  // DebugPrint('          m[16]', m)
   for (i = 0; i < 12; i++) {
-    B2B_G(v, 0, 4, 8, 12, m[SIGMA8[i * 16 + 0]], m[SIGMA8[i * 16 + 1]])
-    B2B_G(v, 1, 5, 9, 13, m[SIGMA8[i * 16 + 2]], m[SIGMA8[i * 16 + 3]])
-    B2B_G(v, 2, 6, 10, 14, m[SIGMA8[i * 16 + 4]], m[SIGMA8[i * 16 + 5]])
-    B2B_G(v, 3, 7, 11, 15, m[SIGMA8[i * 16 + 6]], m[SIGMA8[i * 16 + 7]])
-    B2B_G(v, 0, 5, 10, 15, m[SIGMA8[i * 16 + 8]], m[SIGMA8[i * 16 + 9]])
-    B2B_G(v, 1, 6, 11, 12, m[SIGMA8[i * 16 + 10]], m[SIGMA8[i * 16 + 11]])
-    B2B_G(v, 2, 7, 8, 13, m[SIGMA8[i * 16 + 12]], m[SIGMA8[i * 16 + 13]])
-    B2B_G(v, 3, 4, 9, 14, m[SIGMA8[i * 16 + 14]], m[SIGMA8[i * 16 + 15]])
+    // DebugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v)
+    B2B_G(v, m, 0, 4, 8, 12, SIGMA8[i * 16 + 0], SIGMA8[i * 16 + 1])
+    B2B_G(v, m, 1, 5, 9, 13, SIGMA8[i * 16 + 2], SIGMA8[i * 16 + 3])
+    B2B_G(v, m, 2, 6, 10, 14, SIGMA8[i * 16 + 4], SIGMA8[i * 16 + 5])
+    B2B_G(v, m, 3, 7, 11, 15, SIGMA8[i * 16 + 6], SIGMA8[i * 16 + 7])
+    B2B_G(v, m, 0, 5, 10, 15, SIGMA8[i * 16 + 8], SIGMA8[i * 16 + 9])
+    B2B_G(v, m, 1, 6, 11, 12, SIGMA8[i * 16 + 10], SIGMA8[i * 16 + 11])
+    B2B_G(v, m, 2, 7, 8, 13, SIGMA8[i * 16 + 12], SIGMA8[i * 16 + 13])
+    B2B_G(v, m, 3, 4, 9, 14, SIGMA8[i * 16 + 14], SIGMA8[i * 16 + 15])
   }
+  // DebugPrint('   (i=12) v[16]', v)
 
-  for (i = 0; i < 8; i++) {
-    ctx.h[i] = XOR64(ctx.h[i], XOR64(v[i], v[i + 8]))
+  for (i = 0; i < 16; i++) {
+    ctx.h[i] = ctx.h[i] ^ v[i] ^ v[i + 16]
   }
+  // DebugPrint('h[8]', ctx.h)
 }
 
 // Initialize the hashing context with optional key 'key'
@@ -155,18 +238,18 @@ function blake2b_init (outlen, key) {
   // state, 'param block'
   var ctx = {
     b: new Uint8Array(128),
-    h: new Array(8),
+    h: new Uint32Array(16),
     t: 0, // input count
     c: 0, // pointer within buffer
     outlen: outlen // output length in bytes
   }
 
   // initialize hash state
-  for (var i = 0; i < 8; i++) {
-    ctx.h[i] = BLAKE2B_IV64[i]
+  for (var i = 0; i < 16; i++) {
+    ctx.h[i] = BLAKE2B_IV32[i]
   }
   var keylen = key ? key.length : 0
-  ctx.h[0] = XOR64(ctx.h[0], [0x01010000 ^ (keylen << 8) ^ outlen, 0])
+  ctx.h[0] ^= 0x01010000 ^ (keylen << 8) ^ outlen
 
   // key the hash, if applicable
   if (key) {
@@ -203,7 +286,7 @@ function blake2b_final (ctx) {
   // little endian convert and store
   var out = new Uint8Array(ctx.outlen)
   for (var i = 0; i < ctx.outlen; i++) {
-    out[i] = (ctx.h[i >> 3][(i >> 2) & 1] >> (8 * (i & 3))) & 0xFF
+    out[i] = ctx.h[i >> 2] >> (8 * (i & 3))
   }
   return out
 }
@@ -257,7 +340,6 @@ module.exports = {
   // visible for testing
   test: {
     ROTR64: ROTR64,
-    ADD64: ADD64,
-    XOR64: XOR64
+    ADD64: ADD64
   }
 }

@@ -5,7 +5,6 @@ var fs = require('fs')
 var blake2bHex = blake2b.blake2bHex
 var ROTR64 = blake2b.test.ROTR64
 var ADD64 = blake2b.test.ADD64
-var XOR64 = blake2b.test.XOR64
 
 test('ROTR64', function (t) {
   t.equal('0x0807060504030201', HEX64(ROTR64([0x4030201, 0x8070605], 0)))
@@ -23,12 +22,6 @@ test('ADD64', function (t) {
   t.equal('0x00000002fffffffe', HEX64(ADD64([0xffffffff, 1], [0xffffffff, 0])))
   t.equal('0x76eb1310ddd333a0', HEX64(ADD64([0xF3BCC908, 0x6A09E667], [0xEA166A98, 0x0CE12CA8])))
   t.equal('0x76eb1310ddd333a0', HEX64(ADD64([-205731576, 1779033703], [-367629672, 216083624])))
-  t.end()
-})
-
-test('XOR64', function (t) {
-  t.equal('0x0000000600000002', HEX64(XOR64([1, 2], [3, 4])))
-  t.equal('0x1234567812121212', HEX64(XOR64([0x10101010, 0x12005600], [0x02020202, 0x00340078])))
   t.end()
 })
 
@@ -71,6 +64,8 @@ test('BLAKE2b generated test vectors', function (t) {
 
 test('BLAKE2b performance', function (t) {
   var N = 1 << 22 // number of bytes to hash
+  var RUNS = 3 // how often to repeat, to allow JIT to finish
+
   console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input)')
   var startMs = new Date().getTime()
 
@@ -80,12 +75,17 @@ test('BLAKE2b performance', function (t) {
   }
   var genMs = new Date().getTime()
   console.log('Generated random input in ' + (genMs - startMs) + 'ms')
+  startMs = genMs
 
-  var hashHex = blake2bHex(input)
-  var hashMs = new Date().getTime()
-  console.log('Hashed in ' + (hashMs - genMs) + 'ms: ' + hashHex.substring(0, 20) + '...')
+  for (i = 0; i < RUNS; i++) {
+    var hashHex = blake2bHex(input)
+    var hashMs = new Date().getTime()
+    var ms = hashMs - startMs
+    startMs = hashMs
+    console.log('Hashed in ' + ms + 'ms: ' + hashHex.substring(0, 20) + '...')
+    console.log(Math.round(N / (1 << 20) / (ms / 1000) * 100) / 100 + ' MB PER SECOND')
+  }
 
-  console.log(Math.round(N / (1 << 20) / ((hashMs - genMs) / 1000)) + ' MB PER SECOND')
   t.end()
 })
 
@@ -104,7 +104,7 @@ function hexToBytes (hex) {
 function HEX64 (arr) {
   var s0 = (arr[0] >= 0 ? arr[0] : 0x100000000 + arr[0]).toString(16)
   var s1 = (arr[1] >= 0 ? arr[1] : 0x100000000 + arr[1]).toString(16)
-  return '0x' +
+  return ('0x' +
   new Array(8 - s1.length + 1).join('0') + s1 +
-  new Array(8 - s0.length + 1).join('0') + s0
+  new Array(8 - s0.length + 1).join('0') + s0)
 }
