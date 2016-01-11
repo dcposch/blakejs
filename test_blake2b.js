@@ -1,5 +1,6 @@
 var test = require('tape')
 var blake2b = require('./blake2b')
+var fs = require('fs')
 
 var blake2bHex = blake2b.blake2bHex
 var ROTR64 = blake2b.test.ROTR64
@@ -31,7 +32,7 @@ test('XOR64', function (t) {
   t.end()
 })
 
-test('BLAKE2b', function (t) {
+test('BLAKE2b basic', function (t) {
   // From the example computation in the RFC
   t.equal('ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d1' +
   '7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923',
@@ -51,6 +52,51 @@ test('BLAKE2b', function (t) {
   t.end()
 })
 
+test('BLAKE2b generated test vectors', function (t) {
+  var contents = fs.readFileSync('generated_test_vectors.txt', 'utf8')
+  contents.split('\n').forEach(function (line) {
+    if (line.length === 0) {
+      return
+    }
+    var parts = line.split('\t')
+    var inputHex = parts[0]
+    var keyHex = parts[1]
+    var outLen = parts[2]
+    var outHex = parts[3]
+
+    t.equal(outHex, blake2bHex(hexToBytes(inputHex), hexToBytes(keyHex), outLen))
+  })
+  t.end()
+})
+
+test('BLAKE2b performance', function (t) {
+  var N = 1 << 22 // number of bytes to hash
+  console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input)')
+  var startMs = new Date().getTime()
+
+  var input = new Uint8Array(N)
+  for (var i = 0; i < N; i++) {
+    input[i] = i % 256
+  }
+  var genMs = new Date().getTime()
+  console.log('Generated random input in ' + (genMs - startMs) + 'ms')
+
+  var hashHex = blake2bHex(input)
+  var hashMs = new Date().getTime()
+  console.log('Hashed in ' + (hashMs - genMs) + 'ms: ' + hashHex.substring(0, 20) + '...')
+
+  console.log(Math.round(N / (1 << 20) / ((hashMs - genMs) / 1000)) + ' MB PER SECOND')
+  t.end()
+})
+
+function hexToBytes (hex) {
+  var ret = new Uint8Array(hex.length / 2)
+  for (var i = 0; i < ret.length; i++) {
+    ret[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
+  }
+  return ret
+}
+
 // Prints out a uint64 represented as an array of two uint32s
 // Examples:
 //  HEX64([0x4030201, 0x8070605]) = '0x0807060504030201'
@@ -59,6 +105,6 @@ function HEX64 (arr) {
   var s0 = (arr[0] >= 0 ? arr[0] : 0x100000000 + arr[0]).toString(16)
   var s1 = (arr[1] >= 0 ? arr[1] : 0x100000000 + arr[1]).toString(16)
   return '0x' +
-    new Array(8 - s1.length + 1).join('0') + s1 +
-    new Array(8 - s0.length + 1).join('0') + s0
+  new Array(8 - s1.length + 1).join('0') + s1 +
+  new Array(8 - s0.length + 1).join('0') + s0
 }

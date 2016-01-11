@@ -242,9 +242,10 @@ function blake2b (input, key, outlen) {
 //
 // Parameters:
 // - input - the input bytes, as a Uint8Array or ASCII string
+// - key - optional key, either a 32 or 64-byte Uint8Array
 // - outlen - optional output length in bytes, default 64
-function blake2bHex (input, outlen) {
-  var output = blake2b(input, null, outlen)
+function blake2bHex (input, key, outlen) {
+  var output = blake2b(input, key, outlen)
   return Array.prototype.map.call(output, function (n) {
     return (n < 16 ? '0' : '') + n.toString(16)
   }).join('')
