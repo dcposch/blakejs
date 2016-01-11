@@ -2,46 +2,6 @@
 // Adapted from the reference implementation in RFC7693
 // Ported to Javascript by DC - https://github.com/dcposch
 
-// Cyclic 64-bit right rotation. x0 is low 32 bits, x1 is high 32 bits
-// Returns [low 32 bit output, high 32 bit output]
-function ROTR64 (x, y) {
-  var x0 = x[0]
-  var x1 = x[1]
-  // uint64 rotation is NOT efficient when all you have is float64 :(
-  // (it will JIT compile to signed int32, but it's still pretty terrible)
-  var o0 = (y < 32 ? x0 >>> y : 0) ^
-    (y > 32 ? x1 >>> (y - 32) : 0) ^
-    (y > 32 ? x0 << (64 - y) : 0) ^
-    (y > 0 && y <= 32 ? x1 << (32 - y) : 0)
-  var o1 = (y < 32 ? x1 >>> y : 0) ^
-    (y > 32 ? x0 >>> (y - 32) : 0) ^
-    (y > 32 ? x1 << (64 - y) : 0) ^
-    (y > 0 && y <= 32 ? x0 << (32 - y) : 0)
-  return [o0, o1]
-}
-
-// Javascript is just disgusting...
-// var arr = new Uint32Array(10)
-// arr[0] = 0xffffffff
-// console.log(arr[0]) // prints ~4 billion, all good
-// console.log(arr[0] | 0) // prints -1
-//
-// So when working with 64-bit #s, the two 32-bit halves are *signed* int32s
-function ADD64 (a, b) {
-  var o0 = a[0] + b[0]
-  if (a[0] < 0) {
-    o0 += 0x100000000
-  }
-  if (b[0] < 0) {
-    o0 += 0x100000000
-  }
-  var o1 = a[1] + b[1]
-  if (o0 >= 0x100000000) {
-    o1++
-  }
-  return new Uint32Array([o0, o1])
-}
-
 // For debugging: prints out hash state in the same format as the RFC
 // sample computation
 // function DebugPrint (label, arr) {
@@ -104,21 +64,13 @@ function ROTR64A (v, a, x0, x1, y) {
 // Little-endian byte access
 function B2B_GET32 (arr, i) {
   return (arr[i] ^
-    (arr[i + 1] << 8) ^
-    (arr[i + 2] << 16) ^
-    (arr[i + 3] << 24))
+  (arr[i + 1] << 8) ^
+  (arr[i + 2] << 16) ^
+  (arr[i + 3] << 24))
 }
 
 // G Mixing function.
-function B2B_G (v, m, a, b, c, d, ix, iy) {
-  // 64 -> 32 bit indices
-  a *= 2
-  b *= 2
-  c *= 2
-  d *= 2
-  ix *= 2
-  iy *= 2
-
+function B2B_G (a, b, c, d, ix, iy) {
   var x0 = m[ix]
   var x1 = m[ix + 1]
   var y0 = m[iy]
@@ -159,7 +111,7 @@ var BLAKE2B_IV32 = new Uint32Array([
   0xFB41BD6B, 0x1F83D9AB, 0x137E2179, 0x5BE0CD19
 ])
 
-var SIGMA8 = new Uint8Array([
+var SIGMA8 = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
   14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3,
   11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4,
@@ -172,13 +124,14 @@ var SIGMA8 = new Uint8Array([
   10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
   14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3
-])
+]
+var SIGMA82 = new Uint8Array(SIGMA8.map(function (x) { return x * 2 }))
 
 // Compression function. 'last' flag indicates last block.
+var v = new Uint32Array(32)
+var m = new Uint32Array(32)
 function blake2b_compress (ctx, last) {
   var i = 0
-  var v = new Uint32Array(32)
-  var m = new Uint32Array(32)
 
   // init work variables
   for (i = 0; i < 16; i++) {
@@ -208,21 +161,21 @@ function blake2b_compress (ctx, last) {
   // DebugPrint('          m[16]', m)
   for (i = 0; i < 12; i++) {
     // DebugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v)
-    B2B_G(v, m, 0, 4, 8, 12, SIGMA8[i * 16 + 0], SIGMA8[i * 16 + 1])
-    B2B_G(v, m, 1, 5, 9, 13, SIGMA8[i * 16 + 2], SIGMA8[i * 16 + 3])
-    B2B_G(v, m, 2, 6, 10, 14, SIGMA8[i * 16 + 4], SIGMA8[i * 16 + 5])
-    B2B_G(v, m, 3, 7, 11, 15, SIGMA8[i * 16 + 6], SIGMA8[i * 16 + 7])
-    B2B_G(v, m, 0, 5, 10, 15, SIGMA8[i * 16 + 8], SIGMA8[i * 16 + 9])
-    B2B_G(v, m, 1, 6, 11, 12, SIGMA8[i * 16 + 10], SIGMA8[i * 16 + 11])
-    B2B_G(v, m, 2, 7, 8, 13, SIGMA8[i * 16 + 12], SIGMA8[i * 16 + 13])
-    B2B_G(v, m, 3, 4, 9, 14, SIGMA8[i * 16 + 14], SIGMA8[i * 16 + 15])
+    B2B_G(0, 8, 16, 24, SIGMA82[i * 16 + 0], SIGMA82[i * 16 + 1])
+    B2B_G(2, 10, 18, 26, SIGMA82[i * 16 + 2], SIGMA82[i * 16 + 3])
+    B2B_G(4, 12, 20, 28, SIGMA82[i * 16 + 4], SIGMA82[i * 16 + 5])
+    B2B_G(6, 14, 22, 30, SIGMA82[i * 16 + 6], SIGMA82[i * 16 + 7])
+    B2B_G(0, 10, 20, 30, SIGMA82[i * 16 + 8], SIGMA82[i * 16 + 9])
+    B2B_G(2, 12, 22, 24, SIGMA82[i * 16 + 10], SIGMA82[i * 16 + 11])
+    B2B_G(4, 14, 16, 26, SIGMA82[i * 16 + 12], SIGMA82[i * 16 + 13])
+    B2B_G(6, 8, 18, 28, SIGMA82[i * 16 + 14], SIGMA82[i * 16 + 15])
   }
   // DebugPrint('   (i=12) v[16]', v)
 
   for (i = 0; i < 16; i++) {
     ctx.h[i] = ctx.h[i] ^ v[i] ^ v[i + 16]
   }
-  // DebugPrint('h[8]', ctx.h)
+// DebugPrint('h[8]', ctx.h)
 }
 
 // Initialize the hashing context with optional key 'key'
@@ -336,10 +289,5 @@ function blake2bHex (input, key, outlen) {
 
 module.exports = {
   blake2b: blake2b,
-  blake2bHex: blake2bHex,
-  // visible for testing
-  test: {
-    ROTR64: ROTR64,
-    ADD64: ADD64
-  }
+  blake2bHex: blake2bHex
 }

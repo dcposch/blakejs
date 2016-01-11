@@ -3,27 +3,6 @@ var blake2b = require('./blake2b')
 var fs = require('fs')
 
 var blake2bHex = blake2b.blake2bHex
-var ROTR64 = blake2b.test.ROTR64
-var ADD64 = blake2b.test.ADD64
-
-test('ROTR64', function (t) {
-  t.equal('0x0807060504030201', HEX64(ROTR64([0x4030201, 0x8070605], 0)))
-  t.equal('0x0201080706050403', HEX64(ROTR64([0x4030201, 0x8070605], 16)))
-  t.equal('0x4030201080706050', HEX64(ROTR64([0x4030201, 0x8070605], 28)))
-  t.equal('0x1080706050403020', HEX64(ROTR64([0x4030201, 0x8070605], 4)))
-  t.equal('0x0403020108070605', HEX64(ROTR64([0x4030201, 0x8070605], 32)))
-  t.equal('0x8070605040302010', HEX64(ROTR64([0x4030201, 0x8070605], 60)))
-  t.equal('0x7772fc2886a76c5f', HEX64(ROTR64([0x6c5f7772, 0xfc2886a7], 16)))
-  t.end()
-})
-
-test('ADD64', function (t) {
-  t.equal('0x0000000200000000', HEX64(ADD64([0xffffffff, 1], [1, 0])))
-  t.equal('0x00000002fffffffe', HEX64(ADD64([0xffffffff, 1], [0xffffffff, 0])))
-  t.equal('0x76eb1310ddd333a0', HEX64(ADD64([0xF3BCC908, 0x6A09E667], [0xEA166A98, 0x0CE12CA8])))
-  t.equal('0x76eb1310ddd333a0', HEX64(ADD64([-205731576, 1779033703], [-367629672, 216083624])))
-  t.end()
-})
 
 test('BLAKE2b basic', function (t) {
   // From the example computation in the RFC
@@ -95,16 +74,4 @@ function hexToBytes (hex) {
     ret[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
   }
   return ret
-}
-
-// Prints out a uint64 represented as an array of two uint32s
-// Examples:
-//  HEX64([0x4030201, 0x8070605]) = '0x0807060504030201'
-//  HEX64(ROT64(0x4030201, 0x8070605, 16)) = '0x0201080706050403'
-function HEX64 (arr) {
-  var s0 = (arr[0] >= 0 ? arr[0] : 0x100000000 + arr[0]).toString(16)
-  var s1 = (arr[1] >= 0 ? arr[1] : 0x100000000 + arr[1]).toString(16)
-  return ('0x' +
-  new Array(8 - s1.length + 1).join('0') + s1 +
-  new Array(8 - s0.length + 1).join('0') + s0)
 }
