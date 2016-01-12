@@ -1,6 +1,6 @@
 {
   "name": "blakejs",
-  "version": "0.0.2",
+  "version": "0.3.0",
   "description": "Pure Javascript implementation of the BLAKE2B hash function",
   "main": "blake2b.js",
   "scripts": {

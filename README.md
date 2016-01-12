@@ -50,8 +50,19 @@ Testing
 Performance
 ---
 ```
+15.2 MB / second on a 2.2GHz i7-4770HQ
+
 ¯\_(ツ)_/¯
 ```
+
+If you're using BLAKE2b in server side code, you probably want the [native wrapper](https://www.npmjs.com/package/blake2) which should be able to do several hundred MB / second on the same processor.
+
+If you're using BLAKE2b in a web app, 15 MB/sec is probably fine.
+
+Javascript doesn't have 64-bit integers, and BLAKE2b is a 64-bit integer algorithm. Writing it with`Uint32Array` is not that fast.
+
+If we want better machine code at the expense of gross looking JS code, we could use asm.js
+
 
 License
 ---

@@ -47,20 +47,6 @@ function ADD64AC (v, a, b0, b1) {
   v[a + 1] = o1
 }
 
-// 64-bit right rotation
-// Sets v[a,a+1] = x rotated to the right by y bits
-// b0 is the low 32 bits of b, b1 represents the high 32 bits
-function ROTR64A (v, a, x0, x1, y) {
-  v[a] = (y < 32 ? x0 >>> y : 0) ^
-    (y > 32 ? x1 >>> (y - 32) : 0) ^
-    (y > 32 ? x0 << (64 - y) : 0) ^
-    (y > 0 && y <= 32 ? x1 << (32 - y) : 0)
-  v[a + 1] = (y < 32 ? x1 >>> y : 0) ^
-    (y > 32 ? x0 >>> (y - 32) : 0) ^
-    (y > 32 ? x1 << (64 - y) : 0) ^
-    (y > 0 && y <= 32 ? x0 << (32 - y) : 0)
-}
-
 // Little-endian byte access
 function B2B_GET32 (arr, i) {
   return (arr[i] ^
@@ -79,28 +65,36 @@ function B2B_G (a, b, c, d, ix, iy) {
   ADD64AA(v, a, b) // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
   ADD64AC(v, a, x0, x1) // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
 
+  // v[d,d+1] = (v[d,d+1] xor v[a,a+1]) rotated to the right by 32 bits
   var xor0 = v[d] ^ v[a]
   var xor1 = v[d + 1] ^ v[a + 1]
-  ROTR64A(v, d, xor0, xor1, 32) // v[d,d+1] = <xor> rotated to the right by 32 bits
+  v[d] = xor1
+  v[d + 1] = xor0
 
   ADD64AA(v, c, d)
 
+  // v[b,b+1] = (v[b,b+1] xor v[c,c+1]) rotated right by 24 bits
   xor0 = v[b] ^ v[c]
   xor1 = v[b + 1] ^ v[c + 1]
-  ROTR64A(v, b, xor0, xor1, 24)
+  v[b] = (xor0 >>> 24) ^ (xor1 << 8)
+  v[b + 1] = (xor1 >>> 24) ^ (xor0 << 8)
 
   ADD64AA(v, a, b)
   ADD64AC(v, a, y0, y1)
 
+  // v[d,d+1] = (v[d,d+1] xor v[a,a+1]) rotated right by 16 bits
   xor0 = v[d] ^ v[a]
   xor1 = v[d + 1] ^ v[a + 1]
-  ROTR64A(v, d, xor0, xor1, 16)
+  v[d] = (xor0 >>> 16) ^ (xor1 << 16)
+  v[d + 1] = (xor1 >>> 16) ^ (xor0 << 16)
 
   ADD64AA(v, c, d)
 
+  // v[b,b+1] = (v[b,b+1] xor v[c,c+1]) rotated right by 63 bits
   xor0 = v[b] ^ v[c]
   xor1 = v[b + 1] ^ v[c + 1]
-  ROTR64A(v, b, xor0, xor1, 63)
+  v[b] = (xor1 >>> 31) ^ (xor0 << 1)
+  v[b + 1] = (xor0 >>> 31) ^ (xor1 << 1)
 }
 
 // Initialization Vector.
