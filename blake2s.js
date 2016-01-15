@@ -50,7 +50,6 @@ var SIGMA = new Uint8Array([
 // Compression function. "last" flag indicates last block
 var v = new Uint32Array(16)
 var m = new Uint32Array(16)
-
 function blake2s_compress (ctx, last) {
   var i = 0
   for (i = 0; i < 8; i++) { // init work variables
@@ -91,9 +90,9 @@ function blake2s_compress (ctx, last) {
 // util.debugPrint('h[8]', ctx.h, 32)
 }
 
-// Initialize the hashing context "ctx" with optional key "key".
-//      1 <= outlen <= 32 gives the digest size in bytes.
-//      Secret key (also <= 32 bytes) is optional (keylen = 0).
+// Creates a BLAKE2s hashing context
+// Requires an output length between 1 and 32 bytes
+// Takes an optional Uint8Array key
 function blake2s_init (outlen, key) {
   if (!(outlen > 0 && outlen <= 32)) {
     throw new Error('Incorrect output length, should be in [1, 32]')
@@ -120,6 +119,8 @@ function blake2s_init (outlen, key) {
   return ctx
 }
 
+// Updates a BLAKE2s streaming hash
+// Requires hash context and Uint8Array (byte array)
 function blake2s_update (ctx, input) {
   for (var i = 0; i < input.length; i++) {
     if (ctx.c === 64) { // buffer full ?
@@ -131,6 +132,8 @@ function blake2s_update (ctx, input) {
   }
 }
 
+// Completes a BLAKE2s streaming hash
+// Returns a Uint8Array containing the message digest
 function blake2s_final (ctx) {
   ctx.t += ctx.c // mark last block offset
   while (ctx.c < 64) { // fill up with zeros
@@ -152,7 +155,7 @@ function blake2s_final (ctx) {
 //
 // Parameters:
 // - input - the input bytes, as a Uint8Array or ASCII string
-// - key - optional key, either a 32 or 64-byte Uint8Array
+// - key - optional key Uint8Array, up to 32 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2s (input, key, outlen) {
   // preprocess inputs
@@ -171,7 +174,7 @@ function blake2s (input, key, outlen) {
 //
 // Parameters:
 // - input - the input bytes, as a Uint8Array or ASCII string
-// - key - optional key, either a 32 or 64-byte Uint8Array
+// - key - optional key Uint8Array, up to 32 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2sHex (input, key, outlen) {
   var output = blake2s(input, key, outlen)

@@ -158,8 +158,9 @@ function blake2b_compress (ctx, last) {
 // util.debugPrint('h[8]', ctx.h, 64)
 }
 
-// Initialize the hashing context with optional key 'key'
-// Returns a newly created context
+// Creates a BLAKE2b hashing context
+// Requires an output length between 1 and 64 bytes
+// Takes an optional Uint8Array key
 function blake2b_init (outlen, key) {
   if (outlen === 0 || outlen > 64) {
     throw new Error('Illegal output length, expected 0 < length <= 64')
@@ -194,7 +195,8 @@ function blake2b_init (outlen, key) {
   return ctx
 }
 
-// Add 'in' into the hash. Expects a Uint8Array
+// Updates a BLAKE2b streaming hash
+// Requires hash context and Uint8Array (byte array)
 function blake2b_update (ctx, input) {
   for (var i = 0; i < input.length; i++) {
     if (ctx.c === 128) { // buffer full ?
@@ -206,8 +208,8 @@ function blake2b_update (ctx, input) {
   }
 }
 
-// Generate the message digest.
-// Returns a Uint8Array
+// Completes a BLAKE2b streaming hash
+// Returns a Uint8Array containing the message digest
 function blake2b_final (ctx) {
   ctx.t += ctx.c // mark last block offset
 
@@ -230,7 +232,7 @@ function blake2b_final (ctx) {
 //
 // Parameters:
 // - input - the input bytes, as a Uint8Array or ASCII string
-// - key - optional key, either a 32 or 64-byte Uint8Array
+// - key - optional key Uint8Array, up to 64 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2b (input, key, outlen) {
   // preprocess inputs
@@ -249,7 +251,7 @@ function blake2b (input, key, outlen) {
 //
 // Parameters:
 // - input - the input bytes, as a Uint8Array or ASCII string
-// - key - optional key, either a 32 or 64-byte Uint8Array
+// - key - optional key Uint8Array, up to 64 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2bHex (input, key, outlen) {
   var output = blake2b(input, key, outlen)
