@@ -1,5 +1,6 @@
 var test = require('tape')
 var blake2b = require('./blake2b')
+var util = require('./util')
 var fs = require('fs')
 
 var blake2bHex = blake2b.blake2bHex
@@ -46,25 +47,7 @@ test('BLAKE2b performance', function (t) {
   var RUNS = 3 // how often to repeat, to allow JIT to finish
 
   console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input)')
-  var startMs = new Date().getTime()
-
-  var input = new Uint8Array(N)
-  for (var i = 0; i < N; i++) {
-    input[i] = i % 256
-  }
-  var genMs = new Date().getTime()
-  console.log('Generated random input in ' + (genMs - startMs) + 'ms')
-  startMs = genMs
-
-  for (i = 0; i < RUNS; i++) {
-    var hashHex = blake2bHex(input)
-    var hashMs = new Date().getTime()
-    var ms = hashMs - startMs
-    startMs = hashMs
-    console.log('Hashed in ' + ms + 'ms: ' + hashHex.substring(0, 20) + '...')
-    console.log(Math.round(N / (1 << 20) / (ms / 1000) * 100) / 100 + ' MB PER SECOND')
-  }
-
+  util.testSpeed(blake2bHex, N, RUNS)
   t.end()
 })
 

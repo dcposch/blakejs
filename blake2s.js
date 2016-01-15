@@ -71,9 +71,9 @@ function blake2s_compress (ctx, last) {
   // ten rounds of mixing
   // uncomment the DebugPrint calls to log the computation
   // and match the RFC sample documentation
-  util.debugPrint('          m[16]', m, 32)
+  // util.debugPrint('          m[16]', m, 32)
   for (i = 0; i < 10; i++) {
-    util.debugPrint('   (i=' + i + ')  v[16]', v, 32)
+    // util.debugPrint('   (i=' + i + ')  v[16]', v, 32)
     B2S_G(0, 4, 8, 12, m[SIGMA[i * 16 + 0]], m[SIGMA[i * 16 + 1]])
     B2S_G(1, 5, 9, 13, m[SIGMA[i * 16 + 2]], m[SIGMA[i * 16 + 3]])
     B2S_G(2, 6, 10, 14, m[SIGMA[i * 16 + 4]], m[SIGMA[i * 16 + 5]])
@@ -83,12 +83,12 @@ function blake2s_compress (ctx, last) {
     B2S_G(2, 7, 8, 13, m[SIGMA[i * 16 + 12]], m[SIGMA[i * 16 + 13]])
     B2S_G(3, 4, 9, 14, m[SIGMA[i * 16 + 14]], m[SIGMA[i * 16 + 15]])
   }
-  util.debugPrint('   (i=10) v[16]', v, 32)
+  // util.debugPrint('   (i=10) v[16]', v, 32)
 
   for (i = 0; i < 8; i++) {
     ctx.h[i] ^= v[i] ^ v[i + 8]
   }
-  util.debugPrint('h[8]', ctx.h, 32)
+// util.debugPrint('h[8]', ctx.h, 32)
 }
 
 // Initialize the hashing context "ctx" with optional key "key".
@@ -180,5 +180,8 @@ function blake2sHex (input, key, outlen) {
 
 module.exports = {
   blake2s: blake2s,
-  blake2sHex: blake2sHex
+  blake2sHex: blake2sHex,
+  blake2s_init: blake2s_init,
+  blake2s_update: blake2s_update,
+  blake2s_final: blake2s_final
 }

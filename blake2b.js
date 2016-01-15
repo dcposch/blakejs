@@ -258,5 +258,8 @@ function blake2bHex (input, key, outlen) {
 
 module.exports = {
   blake2b: blake2b,
-  blake2bHex: blake2bHex
+  blake2bHex: blake2bHex,
+  blake2b_init: blake2b_init,
+  blake2b_update: blake2b_update,
+  blake2b_final: blake2b_final
 }
