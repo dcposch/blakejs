@@ -87,7 +87,7 @@ function blake2s_compress (ctx, last) {
   for (i = 0; i < 8; i++) {
     ctx.h[i] ^= v[i] ^ v[i + 8]
   }
-// util.debugPrint('h[8]', ctx.h, 32)
+  // util.debugPrint('h[8]', ctx.h, 32)
 }
 
 // Creates a BLAKE2s hashing context

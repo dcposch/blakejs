@@ -51,6 +51,29 @@ test('BLAKE2b performance', function (t) {
   t.end()
 })
 
+test('Byte counter should support values up to 2**53', function (t) {
+  var testCases = [
+    {t: 1, a0: 1, a1: 0},
+    {t: 0xffffffff, a0: 0xffffffff, a1: 0},
+    {t: 0x100000000, a0: 0, a1: 1},
+    {t: 0x123456789abcd, a0: 0x6789abcd, a1: 0x12345},
+    // test 2**53 - 1
+    {t: 0x1fffffffffffff, a0: 0xffffffff, a1: 0x1fffff}]
+
+  testCases.forEach(function (testCase) {
+    var arr = new Uint32Array([0, 0])
+
+    // test the code that's inlined in both blake2s.js and blake2b.js
+    // to make sure it splits byte counters up to 2**53 into uint32s correctly
+    arr[0] ^= testCase.t
+    arr[1] ^= (testCase.t / 0x100000000)
+
+    t.equal(testCase.a0, arr[0])
+    t.equal(testCase.a1, arr[1])
+  })
+  t.end()
+})
+
 function hexToBytes (hex) {
   var ret = new Uint8Array(hex.length / 2)
   for (var i = 0; i < ret.length; i++) {

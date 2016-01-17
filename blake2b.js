@@ -41,7 +41,8 @@ function B2B_GET32 (arr, i) {
   (arr[i + 3] << 24))
 }
 
-// G Mixing function.
+// G Mixing function
+// The ROTRs are inlined for speed
 function B2B_G (a, b, c, d, ix, iy) {
   var x0 = m[ix]
   var x1 = m[ix + 1]
@@ -83,7 +84,7 @@ function B2B_G (a, b, c, d, ix, iy) {
   v[b + 1] = (xor0 >>> 31) ^ (xor1 << 1)
 }
 
-// Initialization Vector.
+// Initialization Vector
 var BLAKE2B_IV32 = new Uint32Array([
   0xF3BCC908, 0x6A09E667, 0x84CAA73B, 0xBB67AE85,
   0xFE94F82B, 0x3C6EF372, 0x5F1D36F1, 0xA54FF53A,
@@ -105,9 +106,14 @@ var SIGMA8 = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
   14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3
 ]
+
+// These are offsets into a uint64 buffer.
+// Multiply them all by 2 to make them offsets into a uint32 buffer,
+// because this is Javascript and we don't have uint64s
 var SIGMA82 = new Uint8Array(SIGMA8.map(function (x) { return x * 2 }))
 
 // Compression function. 'last' flag indicates last block.
+// Note we're representing 16 uint64s as 32 uint32s
 var v = new Uint32Array(32)
 var m = new Uint32Array(32)
 function blake2b_compress (ctx, last) {
@@ -122,7 +128,7 @@ function blake2b_compress (ctx, last) {
   // low 64 bits of offset
   v[24] = v[24] ^ ctx.t
   v[25] = v[25] ^ (ctx.t / 0x100000000)
-  // high 64 bits not supported, offset may not be higher than ~2^52
+  // high 64 bits not supported, offset may not be higher than 2**53-1
 
   // last block flag set ?
   if (last) {
@@ -155,7 +161,7 @@ function blake2b_compress (ctx, last) {
   for (i = 0; i < 16; i++) {
     ctx.h[i] = ctx.h[i] ^ v[i] ^ v[i + 16]
   }
-// util.debugPrint('h[8]', ctx.h, 64)
+  // util.debugPrint('h[8]', ctx.h, 64)
 }
 
 // Creates a BLAKE2b hashing context
