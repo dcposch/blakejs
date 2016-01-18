@@ -10,9 +10,6 @@ test('BLAKE2b basic', function (t) {
   t.equal('ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d1' +
   '7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923',
     blake2bHex('abc'))
-  t.equal('ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d1' +
-  '7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923',
-    blake2bHex(new Uint8Array([97, 98, 99])))
 
   t.equal('786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419' +
   'd25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce',
@@ -22,6 +19,14 @@ test('BLAKE2b basic', function (t) {
   'f82401cf7aa2e4cb1ecd90296e3f14cb5413f8ed77be73045b13914cdcd6a918',
     blake2bHex('The quick brown fox jumps over the lazy dog'))
 
+  t.end()
+})
+
+test('Input types', function (t) {
+  // Supports string, Uint8Array, and Buffer inputs
+  // We already verify that blake2bHex('abc') produces the correct hash above
+  t.equal(blake2bHex('abc'), blake2bHex(new Uint8Array([97, 98, 99])))
+  t.equal(blake2bHex('abc'), blake2bHex(new Buffer([97, 98, 99])))
   t.end()
 })
 

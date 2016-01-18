@@ -154,7 +154,7 @@ function blake2s_final (ctx) {
 // Returns a n-byte Uint8Array
 //
 // Parameters:
-// - input - the input bytes, as a Uint8Array or ASCII string
+// - input - the input bytes, as a string, Buffer, or Uint8Array
 // - key - optional key Uint8Array, up to 32 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2s (input, key, outlen) {
@@ -173,7 +173,7 @@ function blake2s (input, key, outlen) {
 // Returns an n-byte hash in hex, all lowercase
 //
 // Parameters:
-// - input - the input bytes, as a Uint8Array or ASCII string
+// - input - the input bytes, as a string, Buffer, or Uint8Array
 // - key - optional key Uint8Array, up to 32 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2sHex (input, key, outlen) {
