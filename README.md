@@ -3,24 +3,25 @@ BLAKE.js
 
 Pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions.
 
-BLAKE is the default hash function in the venerable `NaCl` cryptography library. Like SHA2 and SHA3 but unlike MD5 and SHA1, it's believed to be secure. With an optimized assembly implementation, it's faster than all of those.
+BLAKE is the default family of hash functions in the venerable NaCl crypto library. Like SHA2 and SHA3 but unlike MD5 and SHA1, BLAKE offers solid security. With an optimized assembly implementation, BLAKE can be faster than all of those other hash functions.
 
-Of course, this one is Javascript, so it won't be winning any speed records. More on Performance below. It'll be totally fine for most applications though, and it's the only way to compute BLAKE in a browser.
+Of course, this implementation is in Javascript, so it won't be winning any speed records. More under Performance below. It's short and sweet, less than 500 LOC. As far as I know, it's the only package available today to compute BLAKE2s and BLAKE2b in a browser.
 
+Example
+---
 ```js
 var blake = require('blakejs')
 console.log(blake.blake2bHex('abc'))
 // prints ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923
-
 console.log(blake.blake2sHex('abc'))
 // prints 508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982
 ```
 
 API
 ---
-First, `blake2b` computes a BLAKE2b hash.
+**First, `blake2b` computes a BLAKE2b hash.**
 
-Pass it a `Uint8Array` containing bytes to hash, and it will return a `Uint8Array` containing the hash.
+Pass it a string, `Buffer`, or `Uint8Array` containing bytes to hash, and it will return a `Uint8Array` containing the hash.
 
 ```js
 // Computes the BLAKE2B hash of a string or byte array, and returns a Uint8Array
@@ -39,7 +40,7 @@ function blake2b(input, key, outlen) {
 
 For convenience, `blake2bHex` takes the same arguments and works the same way, but returns a hex string.
 
-Second, you can use the `blake2b_init`, `blake2bupdate`, and `blake2b_final` functions to compute the hash of a stream of bytes.
+**Second, you can use `blake2b_init`, `blake2b_update`, and `blake2b_final` to compute the hash of a stream of bytes.**
 
 ```js
 var KEY = null // optional key
@@ -54,11 +55,15 @@ var hash = blake2b_final(context)
 // returns a 64-byte hash, as a Uint8Array
 ```
 
-Finally, all five of these functions (`blake2b`, `blake2bHex`, `blake2b_init`, `blake2b_update`, and `blake2b_final`) have `blake2s` equivalents. The inputs are identical except that maximum key size and maximum output size are 32 bytes instead of 64.
+**Finally, all five of these functions (`blake2b`, `blake2bHex`, `blake2b_init`, `blake2b_update`, and `blake2b_final`) have `blake2s` equivalents.**
+
+The inputs are identical except that maximum key size and maximum output size are 32 bytes instead of 64.
 
 Limitations
 ---
 * Can only handle up to 2**53 bytes of input
+
+  If your webapp is hashing more than 8 petabytes, you may have other problems :)
 
 Testing
 ---
@@ -71,18 +76,18 @@ Performance
 ---
 ```
 BLAKE2b: 15.2 MB / second on a 2.2GHz i7-4770HQ
-BLAKE2s: 20 MB / second
+BLAKE2s: 20.4 MB / second
 
 ¯\_(ツ)_/¯
 ```
 
-If you're using BLAKE2b in server side code, you probably want the [native wrapper](https://www.npmjs.com/package/blake2) which should be able to do several hundred MB / second on the same processor.
+If you're using BLAKE2b in server side node.js code, you probably want the [native wrapper](https://www.npmjs.com/package/blake2) which should be able to do several hundred MB / second on the same processor.
 
-If you're using BLAKE2b in a web app, 15 MB/sec is probably fine.
+If you're using BLAKE2b in a web app, 15 MB/sec might be fine.
 
 Javascript doesn't have 64-bit integers, and BLAKE2b is a 64-bit integer algorithm. Writing it with`Uint32Array` is not that fast. BLAKE2s is a 32-bit algorithm, so it's a bit faster.
 
-If we want better machine code at the expense of gross looking JS code, we could use asm.js
+If we want better machine code at the expense of gross-looking Javascript, we could use asm.js
 
 
 License
