@@ -1,7 +1,6 @@
 var test = require('tape')
-var toHex = require('./util').toHex
-var util = require('./util')
-var b2s = require('./blake2s')
+var testSpeed = require('./test_speed')
+var b2s = require('../dist')
 var blake2s = b2s.blake2s
 var blake2sHex = b2s.blake2sHex
 var blake2s_init = b2s.blake2s_init
@@ -53,6 +52,13 @@ test('BLAKE2s self test', function (t) {
   t.end()
 })
 
+// Converts a Uint8Array to a hexadecimal string
+function toHex (bytes) {
+  return Array.prototype.map.call(bytes, function (n) {
+    return (n < 16 ? '0' : '') + n.toString(16)
+  }).join('')
+}
+
 // Returns a Uint8Array of len bytes
 function selftest_seq (len, seed) {
   var out = new Uint8Array(len)
@@ -73,6 +79,6 @@ test('BLAKE2s performance', function (t) {
   var RUNS = 3 // how often to repeat, to allow JIT to finish
 
   console.log('Benchmarking BLAKE2s(' + (N >> 20) + ' MB input)')
-  util.testSpeed(blake2sHex, N, RUNS)
+  testSpeed(blake2sHex, N, RUNS)
   t.end()
 })
