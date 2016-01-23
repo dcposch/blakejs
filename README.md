@@ -26,10 +26,10 @@ Results so far are surprisingly bad!
 Best result so far obtained with:
 
 ```
-./emcc -O3 -Oz --closure 1 -s EXPORTED_FUNCTIONS="['_blake2b','_malloc','_free','HEAPU8']" ~/blakejs/blake2b.c -o ~/blakejs/a.out.o3opt.js
+./emcc ~/blakejs/blake2b.c -O3 -Oz --closure 1 -s NO_BROWSER=1 -s NO_FILESYSTEM=1 -s NO_EXIT_RUNTIME=1 -s EXPORTED_RUNTIME_METHODS="['_malloc','_free','writeArrayToMemory','HEAPU8']" -s EXPORTED_FUNCTIONS="['_blake2b']" -o ~/blakejs/a.out.o3opt.js
 ```
 
-* Code size is 93KB minified / 34KB gzipped even with `-Oz` and the Closure compiler
+* Code size is 43KB minified / 18KB gzipped even with `-Oz` and the Closure compiler
 * Compare that to 4KB minified / 1.8KB gzipped using the Closure compiler on the original handwritten code. See the `closure-compiler` branch.
 * Speed is **3x worse** than the handwritten port, 6.4 MB/sec vs 15.2 MB/sec on a 2.2GHz i7-4770HQ
 * The original is pretty clean, and of course the Emscripten output is ugly and unreadable
