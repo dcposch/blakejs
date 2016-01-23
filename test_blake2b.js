@@ -1,5 +1,5 @@
 var test = require('tape')
-var blake2b = require('./blake2b')
+var blake2b = require('.')
 var util = require('./util')
 var fs = require('fs')
 
@@ -39,7 +39,7 @@ test('BLAKE2b generated test vectors', function (t) {
     var parts = line.split('\t')
     var inputHex = parts[0]
     var keyHex = parts[1]
-    var outLen = parts[2]
+    var outLen = parseInt(parts[2], 10)
     var outHex = parts[3]
 
     t.equal(blake2bHex(hexToBytes(inputHex), hexToBytes(keyHex), outLen), outHex)
@@ -51,7 +51,7 @@ test('BLAKE2b performance', function (t) {
   var N = 1 << 22 // number of bytes to hash
   var RUNS = 3 // how often to repeat, to allow JIT to finish
 
-  console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input)')
+  console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input) USING EMSCRIPTEN')
   util.testSpeed(blake2bHex, N, RUNS)
   t.end()
 })

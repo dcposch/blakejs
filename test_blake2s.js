@@ -74,7 +74,7 @@ test('BLAKE2s performance', function (t) {
   var N = 1 << 22 // number of bytes to hash
   var RUNS = 3 // how often to repeat, to allow JIT to finish
 
-  console.log('Benchmarking BLAKE2s(' + (N >> 20) + ' MB input)')
+  console.log('Benchmarking BLAKE2s(' + (N >> 20) + ' MB input) USING HANDCODED JS')
   util.testSpeed(blake2sHex, N, RUNS)
   t.end()
 })

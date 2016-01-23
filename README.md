@@ -17,6 +17,23 @@ console.log(blake.blake2sHex('abc'))
 // prints 508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982
 ```
 
+Emscripten
+---
+This branch tests out an alternative asm.js implementation, using Emscripten on the reference C implementation from the BLAKE RFC.
+
+Results so far are surprisingly bad!
+
+Best result so far obtained with:
+
+```
+./emcc -O3 -Oz --closure 1 -s EXPORTED_FUNCTIONS="['_blake2b','_malloc','_free','HEAPU8']" ~/blakejs/blake2b.c -o ~/blakejs/a.out.o3opt.js
+```
+
+* Code size is 93KB minified / 34KB gzipped even with `-Oz` and the Closure compiler
+* Compare that to 4KB minified / 1.8KB gzipped using the Closure compiler on the original handwritten code. See the `closure-compiler` branch.
+* Speed is **3x worse** than the handwritten port, 6.4 MB/sec vs 15.2 MB/sec on a 2.2GHz i7-4770HQ
+* The original is pretty clean, and of course the Emscripten output is ugly and unreadable
+
 API
 ---
 **First, `blake2b` computes a BLAKE2b hash.**

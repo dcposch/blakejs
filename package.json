@@ -4,7 +4,7 @@
   "description": "Pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions",
   "main": "index.js",
   "scripts": {
-    "test": "standard && node test_blake2b.js && node test_blake2s.js"
+    "test": "standard index.js blake*.js test*.js && node test_blake2b.js && node test_blake2s.js"
   },
   "devDependencies": {
     "standard": "*",
