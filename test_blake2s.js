@@ -10,10 +10,12 @@ var blake2s_final = b2s.blake2s_final
 
 test('BLAKE2s basic', function (t) {
   // From the example computation in the RFC
-  t.equal('508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982',
-    blake2sHex('abc'))
-  t.equal('508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982',
-    blake2sHex(new Uint8Array([97, 98, 99])))
+  t.equal(blake2sHex('abc'),
+    '508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982')
+  t.equal(blake2sHex(new Uint8Array([97, 98, 99])),
+    '508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982')
+  t.equal(blake2sHex(new Buffer([97, 98, 99])),
+    '508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982')
   t.end()
 })
 
@@ -49,7 +51,7 @@ test('BLAKE2s self test', function (t) {
 
   // Compute and compare the hash of hashes
   var finalHash = blake2s_final(ctx)
-  t.equal(toHex(expectedHash), toHex(finalHash))
+  t.equal(toHex(finalHash), toHex(expectedHash))
   t.end()
 })
 
