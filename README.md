@@ -1,6 +1,9 @@
 BLAKE.js
 ====
 
+[![travis ci](https://travis-ci.org/dcposch/blakejs.svg?branch=master)](https://travis-ci.org/dcposch/blakejs)
+[![npm version](https://badge.fury.io/js/blakejs.svg)](https://badge.fury.io/js/blakejs)
+
 Pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions.
 
 BLAKE is the default family of hash functions in the venerable NaCl crypto library. Like SHA2 and SHA3 but unlike MD5 and SHA1, BLAKE offers solid security. With an optimized assembly implementation, BLAKE can be faster than all of those other hash functions.
