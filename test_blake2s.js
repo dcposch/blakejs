@@ -4,9 +4,9 @@ var util = require('./util')
 var b2s = require('./blake2s')
 var blake2s = b2s.blake2s
 var blake2sHex = b2s.blake2sHex
-var blake2s_init = b2s.blake2s_init
-var blake2s_update = b2s.blake2s_update
-var blake2s_final = b2s.blake2s_final
+var blake2sInit = b2s.blake2sInit
+var blake2sUpdate = b2s.blake2sUpdate
+var blake2sFinal = b2s.blake2sFinal
 
 test('BLAKE2s basic', function (t) {
   // From the example computation in the RFC
@@ -28,35 +28,35 @@ test('BLAKE2s self test', function (t) {
     0xFB, 0xDC, 0x88, 0x79, 0x7F, 0x4C, 0x1D, 0xFE]
 
   // Parameter sets
-  var b2s_md_len = [16, 20, 28, 32]
-  var b2s_in_len = [0, 3, 64, 65, 255, 1024]
+  var outputLengths = [16, 20, 28, 32]
+  var inputLengths = [0, 3, 64, 65, 255, 1024]
 
   // 256-bit hash for testing
-  var ctx = blake2s_init(32)
+  var ctx = blake2sInit(32)
 
   for (var i = 0; i < 4; i++) {
-    var outlen = b2s_md_len[i]
+    var outlen = outputLengths[i]
     for (var j = 0; j < 6; j++) {
-      var inlen = b2s_in_len[j]
+      var inlen = inputLengths[j]
 
-      var arr = selftest_seq(inlen, inlen)
+      var arr = generateInput(inlen, inlen)
       var hash = blake2s(arr, null, outlen) // unkeyed hash
-      blake2s_update(ctx, hash) // hash the hash
+      blake2sUpdate(ctx, hash) // hash the hash
 
-      var key = selftest_seq(outlen, outlen)
+      var key = generateInput(outlen, outlen)
       hash = blake2s(arr, key, outlen) // keyed hash
-      blake2s_update(ctx, hash) // hash the hash
+      blake2sUpdate(ctx, hash) // hash the hash
     }
   }
 
   // Compute and compare the hash of hashes
-  var finalHash = blake2s_final(ctx)
+  var finalHash = blake2sFinal(ctx)
   t.equal(toHex(finalHash), toHex(expectedHash))
   t.end()
 })
 
 // Returns a Uint8Array of len bytes
-function selftest_seq (len, seed) {
+function generateInput (len, seed) {
   var out = new Uint8Array(len)
   var a = new Uint32Array(3)
   a[0] = 0xDEAD4BAD * seed // prime

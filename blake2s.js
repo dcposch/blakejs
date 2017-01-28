@@ -50,7 +50,7 @@ var SIGMA = new Uint8Array([
 // Compression function. "last" flag indicates last block
 var v = new Uint32Array(16)
 var m = new Uint32Array(16)
-function blake2s_compress (ctx, last) {
+function blake2sCompress (ctx, last) {
   var i = 0
   for (i = 0; i < 8; i++) { // init work variables
     v[i] = ctx.h[i]
@@ -93,7 +93,7 @@ function blake2s_compress (ctx, last) {
 // Creates a BLAKE2s hashing context
 // Requires an output length between 1 and 32 bytes
 // Takes an optional Uint8Array key
-function blake2s_init (outlen, key) {
+function blake2sInit (outlen, key) {
   if (!(outlen > 0 && outlen <= 32)) {
     throw new Error('Incorrect output length, should be in [1, 32]')
   }
@@ -112,7 +112,7 @@ function blake2s_init (outlen, key) {
   ctx.h[0] ^= 0x01010000 ^ (keylen << 8) ^ outlen
 
   if (keylen > 0) {
-    blake2s_update(ctx, key)
+    blake2sUpdate(ctx, key)
     ctx.c = 64 // at the end
   }
 
@@ -121,11 +121,11 @@ function blake2s_init (outlen, key) {
 
 // Updates a BLAKE2s streaming hash
 // Requires hash context and Uint8Array (byte array)
-function blake2s_update (ctx, input) {
+function blake2sUpdate (ctx, input) {
   for (var i = 0; i < input.length; i++) {
     if (ctx.c === 64) { // buffer full ?
       ctx.t += ctx.c // add counters
-      blake2s_compress(ctx, false) // compress (not last)
+      blake2sCompress(ctx, false) // compress (not last)
       ctx.c = 0 // counter to zero
     }
     ctx.b[ctx.c++] = input[i]
@@ -134,12 +134,12 @@ function blake2s_update (ctx, input) {
 
 // Completes a BLAKE2s streaming hash
 // Returns a Uint8Array containing the message digest
-function blake2s_final (ctx) {
+function blake2sFinal (ctx) {
   ctx.t += ctx.c // mark last block offset
   while (ctx.c < 64) { // fill up with zeros
     ctx.b[ctx.c++] = 0
   }
-  blake2s_compress(ctx, true) // final block flag = 1
+  blake2sCompress(ctx, true) // final block flag = 1
 
   // little endian convert and store
   var out = new Uint8Array(ctx.outlen)
@@ -163,9 +163,9 @@ function blake2s (input, key, outlen) {
   input = util.normalizeInput(input)
 
   // do the math
-  var ctx = blake2s_init(outlen, key)
-  blake2s_update(ctx, input)
-  return blake2s_final(ctx)
+  var ctx = blake2sInit(outlen, key)
+  blake2sUpdate(ctx, input)
+  return blake2sFinal(ctx)
 }
 
 // Computes the BLAKE2S hash of a string or byte array
@@ -184,7 +184,7 @@ function blake2sHex (input, key, outlen) {
 module.exports = {
   blake2s: blake2s,
   blake2sHex: blake2sHex,
-  blake2s_init: blake2s_init,
-  blake2s_update: blake2s_update,
-  blake2s_final: blake2s_final
+  blake2sInit: blake2sInit,
+  blake2sUpdate: blake2sUpdate,
+  blake2sFinal: blake2sFinal
 }

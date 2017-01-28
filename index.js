@@ -4,12 +4,12 @@ var b2s = require('./blake2s')
 module.exports = {
   blake2b: b2b.blake2b,
   blake2bHex: b2b.blake2bHex,
-  blake2b_init: b2b.blake2b_init,
-  blake2b_update: b2b.blake2b_update,
-  blake2b_final: b2b.blake2b_final,
+  blake2bInit: b2b.blake2bInit,
+  blake2bUpdate: b2b.blake2bUpdate,
+  blake2bFinal: b2b.blake2bFinal,
   blake2s: b2s.blake2s,
   blake2sHex: b2s.blake2sHex,
-  blake2s_init: b2s.blake2s_init,
-  blake2s_update: b2s.blake2s_update,
-  blake2s_final: b2s.blake2s_final
+  blake2sInit: b2s.blake2sInit,
+  blake2sUpdate: b2s.blake2sUpdate,
+  blake2sFinal: b2s.blake2sFinal
 }
