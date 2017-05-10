@@ -1,10 +1,10 @@
-BLAKE.js
+blakejs
 ====
 
 [![travis ci](https://travis-ci.org/dcposch/blakejs.svg?branch=master)](https://travis-ci.org/dcposch/blakejs)
 [![npm version](https://badge.fury.io/js/blakejs.svg)](https://badge.fury.io/js/blakejs)
 
-**blake.js is a pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions.**
+**blakejs is a pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions.**
 
 ![blake1](https://cloud.githubusercontent.com/assets/169280/25921238/9bf1877a-3589-11e7-8a93-74b69c3874bb.jpg)
 
