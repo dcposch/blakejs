@@ -52,7 +52,7 @@ function blake2b(input, key, outlen) {
 
 For convenience, `blake2bHex` takes the same arguments and works the same way, but returns a hex string.
 
-### 2. Use `blake2bInit`, `blake2bUpdate`, and `blake2bFinal` to compute the hash of a stream of bytes
+### 2. Use `blake2b[Init,Update,Final]` to compute a streaming hash
 
 ```js
 var KEY = null // optional key
