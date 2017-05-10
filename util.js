@@ -8,7 +8,7 @@ function normalizeInput (input) {
   } else if (input instanceof Buffer) {
     ret = new Uint8Array(input)
   } else if (typeof (input) === 'string') {
-    ret = new Uint8Array(new Buffer(input, 'utf8'))
+    ret = new Uint8Array(Buffer.from(input, 'utf8'))
   } else {
     throw new Error(ERROR_MSG_INPUT)
   }

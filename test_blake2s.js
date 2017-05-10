@@ -14,7 +14,7 @@ test('BLAKE2s basic', function (t) {
     '508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982')
   t.equal(blake2sHex(new Uint8Array([97, 98, 99])),
     '508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982')
-  t.equal(blake2sHex(new Buffer([97, 98, 99])),
+  t.equal(blake2sHex(Buffer.from([97, 98, 99])),
     '508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982')
   t.end()
 })

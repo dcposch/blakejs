@@ -26,7 +26,7 @@ test('Input types', function (t) {
   // Supports string, Uint8Array, and Buffer inputs
   // We already verify that blake2bHex('abc') produces the correct hash above
   t.equal(blake2bHex(new Uint8Array([97, 98, 99])), blake2bHex('abc'))
-  t.equal(blake2bHex(new Buffer([97, 98, 99])), blake2bHex('abc'))
+  t.equal(blake2bHex(Buffer.from([97, 98, 99])), blake2bHex('abc'))
   t.end()
 })
 
