@@ -4,17 +4,21 @@ BLAKE.js
 [![travis ci](https://travis-ci.org/dcposch/blakejs.svg?branch=master)](https://travis-ci.org/dcposch/blakejs)
 [![npm version](https://badge.fury.io/js/blakejs.svg)](https://badge.fury.io/js/blakejs)
 
-**This is a pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions.**
+**blake.js is a pure Javascript implementation of the BLAKE2b and BLAKE2s hash functions.**
 
-BLAKE is the default family of hash functions in the venerable NaCl crypto library. Like SHA2 and SHA3 but unlike MD5 and SHA1, BLAKE offers solid security. With an optimized assembly implementation, BLAKE can be faster than all of those other hash functions.
+![blake1](https://cloud.githubusercontent.com/assets/169280/25921238/9bf1877a-3589-11e7-8a93-74b69c3874bb.jpg)
+
+---
 
 [RFC 7693: The BLAKE Cryptographic Hash and MAC](https://tools.ietf.org/html/rfc7693)
 
+BLAKE is the default family of hash functions in the venerable NaCl crypto library. Like SHA2 and SHA3 but unlike MD5 and SHA1, BLAKE offers solid security. With an optimized assembly implementation, BLAKE can be faster than all of those other hash functions.
+
 Of course, this implementation is in Javascript, so it won't be winning any speed records. More under Performance below. It's short and sweet, less than 500 LOC.
 
-**As far as I know, it's the only package available today to compute BLAKE2s and BLAKE2b in a browser.**
+**As far as I know, this is the only package available today to compute BLAKE in a browser.**
 
-Example
+Quick Start
 ---
 ```js
 var blake = require('blakejs')
@@ -26,7 +30,8 @@ console.log(blake.blake2sHex('abc'))
 
 API
 ---
-**First, `blake2b` computes a BLAKE2b hash.**
+
+### 1. Use `blake2b` to compute a BLAKE2b hash
 
 Pass it a string, `Buffer`, or `Uint8Array` containing bytes to hash, and it will return a `Uint8Array` containing the hash.
 
@@ -47,7 +52,7 @@ function blake2b(input, key, outlen) {
 
 For convenience, `blake2bHex` takes the same arguments and works the same way, but returns a hex string.
 
-**Second, you can use `blake2bInit`, `blake2bUpdate`, and `blake2bFinall` to compute the hash of a stream of bytes.**
+### 2. Use `blake2bInit`, `blake2bUpdate`, and `blake2bFinal` to compute the hash of a stream of bytes
 
 ```js
 var KEY = null // optional key
@@ -62,7 +67,11 @@ var hash = blake2bFinal(context)
 // returns a 64-byte hash, as a Uint8Array
 ```
 
-**Finally, all five of these functions (`blake2b`, `blake2bHex`, `blake2bInit`, `blake2bUpdate`, and `blake2bFinal`) have `blake2s` equivalents.**
+### 3. All `blake2b*` functions have `blake2s*` equivalents
+
+BLAKE2b: `blake2b`, `blake2bHex`, `blake2bInit`, `blake2bUpdate`, and `blake2bFinal`
+
+BLAKE2s: `blake2s`, `blake2sHex`, `blake2sInit`, `blake2sUpdate`, and `blake2sFinal`
 
 The inputs are identical except that maximum key size and maximum output size are 32 bytes instead of 64.
 
