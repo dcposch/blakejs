@@ -20,6 +20,10 @@ Of course, this implementation is in Javascript, so it won't be winning any spee
 
 Quick Start
 ---
+```
+$ npm install --save blakejs
+```
+
 ```js
 var blake = require('blakejs')
 console.log(blake.blake2bHex('abc'))
