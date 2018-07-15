@@ -16,7 +16,7 @@ BLAKE is the default family of hash functions in the venerable NaCl crypto libra
 
 Of course, this implementation is in Javascript, so it won't be winning any speed records. More under Performance below. It's short and sweet, less than 500 LOC.
 
-**As far as I know, this is the only package available today to compute BLAKE in a browser.**
+For WebAssembly implementation with higher performance you might want to consider [blake2.wasm](https://github.com/nazar-pc/blake2.wasm) instead.
 
 Quick Start
 ---
