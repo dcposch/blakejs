@@ -16,7 +16,12 @@ BLAKE is the default family of hash functions in the venerable NaCl crypto libra
 
 Of course, this implementation is in Javascript, so it won't be winning any speed records. More under Performance below. It's short and sweet, less than 500 LOC.
 
-For WebAssembly implementation with higher performance you might want to consider [blake2.wasm](https://github.com/nazar-pc/blake2.wasm) instead.
+**As far as I know, this package is the easiest way to compute Blake2 in the browser.**
+
+Other options you might consider:
+- @nazar-pc has WebAssembly implementation with higher performance [blake2.wasm](https://github.com/nazar-pc/blake2.wasm)
+- @emilbayes has a Blake2b only implementation with salt support. WASM with automatic JS fallback. [blake2b](https://github.com/emilbayes/blake2b)
+- On node, you probably want the native wrapper [node-blake2](https://github.com/ludios/node-blake2)
 
 Quick Start
 ---
