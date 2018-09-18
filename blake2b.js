@@ -2,7 +2,7 @@
 // Adapted from the reference implementation in RFC7693
 // Ported to Javascript by DC - https://github.com/dcposch
 
-var util = require('./util')
+import * as util from './util'
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
@@ -264,10 +264,10 @@ function blake2bHex (input, key, outlen) {
   return util.toHex(output)
 }
 
-module.exports = {
-  blake2b: blake2b,
-  blake2bHex: blake2bHex,
-  blake2bInit: blake2bInit,
-  blake2bUpdate: blake2bUpdate,
-  blake2bFinal: blake2bFinal
+export {
+  blake2b,
+  blake2bHex,
+  blake2bInit,
+  blake2bUpdate,
+  blake2bFinal
 }

@@ -2,7 +2,7 @@
 // Adapted from the reference implementation in RFC7693
 // Ported to Javascript by DC - https://github.com/dcposch
 
-var util = require('./util')
+import * as util from './util'
 
 // Little-endian byte access.
 // Expects a Uint8Array and an index
@@ -181,10 +181,10 @@ function blake2sHex (input, key, outlen) {
   return util.toHex(output)
 }
 
-module.exports = {
-  blake2s: blake2s,
-  blake2sHex: blake2sHex,
-  blake2sInit: blake2sInit,
-  blake2sUpdate: blake2sUpdate,
-  blake2sFinal: blake2sFinal
+export {
+  blake2s,
+  blake2sHex,
+  blake2sInit,
+  blake2sUpdate,
+  blake2sFinal
 }

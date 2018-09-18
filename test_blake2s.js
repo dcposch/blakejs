@@ -1,12 +1,7 @@
+import { testSpeed, toHex } from './util'
+import { blake2s, blake2sHex, blake2sInit, blake2sUpdate, blake2sFinal } from './blake2s'
+
 var test = require('tape')
-var toHex = require('./util').toHex
-var util = require('./util')
-var b2s = require('./blake2s')
-var blake2s = b2s.blake2s
-var blake2sHex = b2s.blake2sHex
-var blake2sInit = b2s.blake2sInit
-var blake2sUpdate = b2s.blake2sUpdate
-var blake2sFinal = b2s.blake2sFinal
 
 test('BLAKE2s basic', function (t) {
   // From the example computation in the RFC
@@ -75,6 +70,6 @@ test('BLAKE2s performance', function (t) {
   var RUNS = 3 // how often to repeat, to allow JIT to finish
 
   console.log('Benchmarking BLAKE2s(' + (N >> 20) + ' MB input)')
-  util.testSpeed(blake2sHex, N, RUNS)
+  testSpeed(blake2sHex, N, RUNS)
   t.end()
 })

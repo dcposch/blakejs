@@ -1,9 +1,8 @@
-var test = require('tape')
-var blake2b = require('./blake2b')
-var util = require('./util')
-var fs = require('fs')
+import { blake2bHex } from './blake2b'
+import { testSpeed } from './util'
 
-var blake2bHex = blake2b.blake2bHex
+var test = require('tape')
+var fs = require('fs')
 
 test('BLAKE2b basic', function (t) {
   // From the example computation in the RFC
@@ -52,7 +51,7 @@ test('BLAKE2b performance', function (t) {
   var RUNS = 3 // how often to repeat, to allow JIT to finish
 
   console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input)')
-  util.testSpeed(blake2bHex, N, RUNS)
+  testSpeed(blake2bHex, N, RUNS)
   t.end()
 })
 
