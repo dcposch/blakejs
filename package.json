@@ -17,6 +17,9 @@
     "standard": "^12.0.1",
     "tape": "*"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dcposch/blakejs.git"
