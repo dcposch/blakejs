@@ -58,12 +58,12 @@ test('BLAKE2b performance', function (t) {
 
 test('Byte counter should support values up to 2**53', function (t) {
   var testCases = [
-    {t: 1, a0: 1, a1: 0},
-    {t: 0xffffffff, a0: 0xffffffff, a1: 0},
-    {t: 0x100000000, a0: 0, a1: 1},
-    {t: 0x123456789abcd, a0: 0x6789abcd, a1: 0x12345},
+    { t: 1, a0: 1, a1: 0 },
+    { t: 0xffffffff, a0: 0xffffffff, a1: 0 },
+    { t: 0x100000000, a0: 0, a1: 1 },
+    { t: 0x123456789abcd, a0: 0x6789abcd, a1: 0x12345 },
     // test 2**53 - 1
-    {t: 0x1fffffffffffff, a0: 0xffffffff, a1: 0x1fffff}]
+    { t: 0x1fffffffffffff, a0: 0xffffffff, a1: 0x1fffff }]
 
   testCases.forEach(function (testCase) {
     var arr = new Uint32Array([0, 0])

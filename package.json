@@ -7,7 +7,7 @@
     "test": "standard && node test_blake2b.js && node test_blake2s.js"
   },
   "devDependencies": {
-    "standard": "*",
+    "standard": "^12.0.1",
     "tape": "*"
   },
   "repository": {
