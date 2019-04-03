@@ -54,7 +54,9 @@ Pass it a string, `Buffer`, or `Uint8Array` containing bytes to hash, and it wil
 //           Strings are converted to UTF8 bytes
 // - key - optional key Uint8Array, up to 64 bytes
 // - outlen - optional output length in bytes, default 64
-function blake2b(input, key, outlen) {
+// - salt - optional salt bytes, string, Buffer or Uint8Array
+// - personal - optional personal bytes, string, Buffer or Uint8Array
+function blake2b(input, key, outlen, salt, personal) {
     [...]
 }
 ```
