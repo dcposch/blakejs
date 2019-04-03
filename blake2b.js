@@ -164,15 +164,43 @@ function blake2bCompress (ctx, last) {
   // util.debugPrint('h[8]', ctx.h, 64)
 }
 
+// reusable parameter_block
+var parameter_block = new Uint8Array([
+  0, 0, 0, 0,      //  0: outlen, keylen, fanout, depth
+  0, 0, 0, 0,      //  4: leaf length, sequential mode
+  0, 0, 0, 0,      //  8: node offset
+  0, 0, 0, 0,      // 12: node offset
+  0, 0, 0, 0,      // 16: node depth, inner length, rfu
+  0, 0, 0, 0,      // 20: rfu
+  0, 0, 0, 0,      // 24: rfu
+  0, 0, 0, 0,      // 28: rfu
+  0, 0, 0, 0,      // 32: salt
+  0, 0, 0, 0,      // 36: salt
+  0, 0, 0, 0,      // 40: salt
+  0, 0, 0, 0,      // 44: salt
+  0, 0, 0, 0,      // 48: personal
+  0, 0, 0, 0,      // 52: personal
+  0, 0, 0, 0,      // 56: personal
+  0, 0, 0, 0       // 60: personal
+])
+
 // Creates a BLAKE2b hashing context
 // Requires an output length between 1 and 64 bytes
 // Takes an optional Uint8Array key
-function blake2bInit (outlen, key) {
+// Takes an optinal Uint8Array salt
+// Takes an optinal Uint8Array personal
+function blake2bInit (outlen, key, salt, personal) {
   if (outlen === 0 || outlen > 64) {
     throw new Error('Illegal output length, expected 0 < length <= 64')
   }
   if (key && key.length > 64) {
     throw new Error('Illegal key, expected Uint8Array with 0 < length <= 64')
+  }
+  if (salt && salt.length !== 16) {
+    throw new Error('Illegal salt, expected Uint8Array with length is 16')
+  }
+  if (personal && personal.length !== 16) {
+    throw new Error('Illegal personal, expected Uint8Array with length is 16')
   }
 
   // state, 'param block'
@@ -184,12 +212,20 @@ function blake2bInit (outlen, key) {
     outlen: outlen // output length in bytes
   }
 
+  // zero out parameter_block before usage
+  parameter_block.fill(0)
+  parameter_block[0] = outlen
+  if (key) parameter_block[1] = key.length
+  parameter_block[2] = 1 // fanout
+  parameter_block[3] = 1 // depth
+
+  if (salt) parameter_block.set(salt, 32)
+  if (personal) parameter_block.set(personal, 48)
+
   // initialize hash state
   for (var i = 0; i < 16; i++) {
-    ctx.h[i] = BLAKE2B_IV32[i]
+    ctx.h[i] = BLAKE2B_IV32[i] ^ B2B_GET32(parameter_block, i * 4)
   }
-  var keylen = key ? key.length : 0
-  ctx.h[0] ^= 0x01010000 ^ (keylen << 8) ^ outlen
 
   // key the hash, if applicable
   if (key) {
@@ -240,13 +276,21 @@ function blake2bFinal (ctx) {
 // - input - the input bytes, as a string, Buffer or Uint8Array
 // - key - optional key Uint8Array, up to 64 bytes
 // - outlen - optional output length in bytes, default 64
-function blake2b (input, key, outlen) {
+// - salt - optional salt bytes, string, Buffer or Uint8Array
+// - personal - optional personal bytes, string, Buffer or Uint8Array
+function blake2b (input, key, outlen, salt, personal) {
   // preprocess inputs
   outlen = outlen || 64
   input = util.normalizeInput(input)
+  if (salt) {
+    salt = util.normalizeInput(salt)
+  }
+  if (personal) {
+    personal = util.normalizeInput(personal)
+  }
 
   // do the math
-  var ctx = blake2bInit(outlen, key)
+  var ctx = blake2bInit(outlen, key, salt, personal)
   blake2bUpdate(ctx, input)
   return blake2bFinal(ctx)
 }
@@ -259,8 +303,10 @@ function blake2b (input, key, outlen) {
 // - input - the input bytes, as a string, Buffer, or Uint8Array
 // - key - optional key Uint8Array, up to 64 bytes
 // - outlen - optional output length in bytes, default 64
-function blake2bHex (input, key, outlen) {
-  var output = blake2b(input, key, outlen)
+// - salt - optional salt bytes, string, Buffer or Uint8Array
+// - personal - optional personal bytes, string, Buffer or Uint8Array
+function blake2bHex (input, key, outlen, salt, personal) {
+  var output = blake2b(input, key, outlen, salt, personal)
   return util.toHex(output)
 }
 
