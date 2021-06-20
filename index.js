@@ -1,5 +1,5 @@
-var b2b = require('./blake2b')
-var b2s = require('./blake2s')
+const b2b = require('./blake2b')
+const b2s = require('./blake2s')
 
 module.exports = {
   blake2b: b2b.blake2b,

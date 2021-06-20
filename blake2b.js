@@ -2,14 +2,14 @@
 // Adapted from the reference implementation in RFC7693
 // Ported to Javascript by DC - https://github.com/dcposch
 
-var util = require('./util')
+const util = require('./util')
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
 // v should be a Uint32Array
 function ADD64AA (v, a, b) {
-  var o0 = v[a] + v[b]
-  var o1 = v[a + 1] + v[b + 1]
+  const o0 = v[a] + v[b]
+  let o1 = v[a + 1] + v[b + 1]
   if (o0 >= 0x100000000) {
     o1++
   }
@@ -21,11 +21,11 @@ function ADD64AA (v, a, b) {
 // Sets v[a,a+1] += b
 // b0 is the low 32 bits of b, b1 represents the high 32 bits
 function ADD64AC (v, a, b0, b1) {
-  var o0 = v[a] + b0
+  let o0 = v[a] + b0
   if (b0 < 0) {
     o0 += 0x100000000
   }
-  var o1 = v[a + 1] + b1
+  let o1 = v[a + 1] + b1
   if (o0 >= 0x100000000) {
     o1++
   }
@@ -35,26 +35,23 @@ function ADD64AC (v, a, b0, b1) {
 
 // Little-endian byte access
 function B2B_GET32 (arr, i) {
-  return (arr[i] ^
-  (arr[i + 1] << 8) ^
-  (arr[i + 2] << 16) ^
-  (arr[i + 3] << 24))
+  return arr[i] ^ (arr[i + 1] << 8) ^ (arr[i + 2] << 16) ^ (arr[i + 3] << 24)
 }
 
 // G Mixing function
 // The ROTRs are inlined for speed
 function B2B_G (a, b, c, d, ix, iy) {
-  var x0 = m[ix]
-  var x1 = m[ix + 1]
-  var y0 = m[iy]
-  var y1 = m[iy + 1]
+  const x0 = m[ix]
+  const x1 = m[ix + 1]
+  const y0 = m[iy]
+  const y1 = m[iy + 1]
 
   ADD64AA(v, a, b) // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
   ADD64AC(v, a, x0, x1) // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
 
   // v[d,d+1] = (v[d,d+1] xor v[a,a+1]) rotated to the right by 32 bits
-  var xor0 = v[d] ^ v[a]
-  var xor1 = v[d + 1] ^ v[a + 1]
+  let xor0 = v[d] ^ v[a]
+  let xor1 = v[d + 1] ^ v[a + 1]
   v[d] = xor1
   v[d + 1] = xor0
 
@@ -85,39 +82,235 @@ function B2B_G (a, b, c, d, ix, iy) {
 }
 
 // Initialization Vector
-var BLAKE2B_IV32 = new Uint32Array([
-  0xF3BCC908, 0x6A09E667, 0x84CAA73B, 0xBB67AE85,
-  0xFE94F82B, 0x3C6EF372, 0x5F1D36F1, 0xA54FF53A,
-  0xADE682D1, 0x510E527F, 0x2B3E6C1F, 0x9B05688C,
-  0xFB41BD6B, 0x1F83D9AB, 0x137E2179, 0x5BE0CD19
+const BLAKE2B_IV32 = new Uint32Array([
+  0xf3bcc908,
+  0x6a09e667,
+  0x84caa73b,
+  0xbb67ae85,
+  0xfe94f82b,
+  0x3c6ef372,
+  0x5f1d36f1,
+  0xa54ff53a,
+  0xade682d1,
+  0x510e527f,
+  0x2b3e6c1f,
+  0x9b05688c,
+  0xfb41bd6b,
+  0x1f83d9ab,
+  0x137e2179,
+  0x5be0cd19
 ])
 
-var SIGMA8 = [
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-  14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3,
-  11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4,
-  7, 9, 3, 1, 13, 12, 11, 14, 2, 6, 5, 10, 4, 0, 15, 8,
-  9, 0, 5, 7, 2, 4, 10, 15, 14, 1, 11, 12, 6, 8, 3, 13,
-  2, 12, 6, 10, 0, 11, 8, 3, 4, 13, 7, 5, 15, 14, 1, 9,
-  12, 5, 1, 15, 14, 13, 4, 10, 0, 7, 6, 3, 9, 2, 8, 11,
-  13, 11, 7, 14, 12, 1, 3, 9, 5, 0, 15, 4, 8, 6, 2, 10,
-  6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5,
-  10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-  14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3
+const SIGMA8 = [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  14,
+  10,
+  4,
+  8,
+  9,
+  15,
+  13,
+  6,
+  1,
+  12,
+  0,
+  2,
+  11,
+  7,
+  5,
+  3,
+  11,
+  8,
+  12,
+  0,
+  5,
+  2,
+  15,
+  13,
+  10,
+  14,
+  3,
+  6,
+  7,
+  1,
+  9,
+  4,
+  7,
+  9,
+  3,
+  1,
+  13,
+  12,
+  11,
+  14,
+  2,
+  6,
+  5,
+  10,
+  4,
+  0,
+  15,
+  8,
+  9,
+  0,
+  5,
+  7,
+  2,
+  4,
+  10,
+  15,
+  14,
+  1,
+  11,
+  12,
+  6,
+  8,
+  3,
+  13,
+  2,
+  12,
+  6,
+  10,
+  0,
+  11,
+  8,
+  3,
+  4,
+  13,
+  7,
+  5,
+  15,
+  14,
+  1,
+  9,
+  12,
+  5,
+  1,
+  15,
+  14,
+  13,
+  4,
+  10,
+  0,
+  7,
+  6,
+  3,
+  9,
+  2,
+  8,
+  11,
+  13,
+  11,
+  7,
+  14,
+  12,
+  1,
+  3,
+  9,
+  5,
+  0,
+  15,
+  4,
+  8,
+  6,
+  2,
+  10,
+  6,
+  15,
+  14,
+  9,
+  11,
+  3,
+  0,
+  8,
+  12,
+  2,
+  13,
+  7,
+  1,
+  4,
+  10,
+  5,
+  10,
+  2,
+  8,
+  4,
+  7,
+  6,
+  1,
+  5,
+  15,
+  11,
+  9,
+  14,
+  3,
+  12,
+  13,
+  0,
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  14,
+  10,
+  4,
+  8,
+  9,
+  15,
+  13,
+  6,
+  1,
+  12,
+  0,
+  2,
+  11,
+  7,
+  5,
+  3
 ]
 
 // These are offsets into a uint64 buffer.
 // Multiply them all by 2 to make them offsets into a uint32 buffer,
 // because this is Javascript and we don't have uint64s
-var SIGMA82 = new Uint8Array(SIGMA8.map(function (x) { return x * 2 }))
+const SIGMA82 = new Uint8Array(
+  SIGMA8.map(function (x) {
+    return x * 2
+  })
+)
 
 // Compression function. 'last' flag indicates last block.
 // Note we're representing 16 uint64s as 32 uint32s
-var v = new Uint32Array(32)
-var m = new Uint32Array(32)
+const v = new Uint32Array(32)
+const m = new Uint32Array(32)
 function blake2bCompress (ctx, last) {
-  var i = 0
+  let i = 0
 
   // init work variables
   for (i = 0; i < 16; i++) {
@@ -176,7 +369,7 @@ function blake2bInit (outlen, key) {
   }
 
   // state, 'param block'
-  var ctx = {
+  const ctx = {
     b: new Uint8Array(128),
     h: new Uint32Array(16),
     t: 0, // input count
@@ -185,10 +378,10 @@ function blake2bInit (outlen, key) {
   }
 
   // initialize hash state
-  for (var i = 0; i < 16; i++) {
+  for (let i = 0; i < 16; i++) {
     ctx.h[i] = BLAKE2B_IV32[i]
   }
-  var keylen = key ? key.length : 0
+  const keylen = key ? key.length : 0
   ctx.h[0] ^= 0x01010000 ^ (keylen << 8) ^ outlen
 
   // key the hash, if applicable
@@ -204,8 +397,9 @@ function blake2bInit (outlen, key) {
 // Updates a BLAKE2b streaming hash
 // Requires hash context and Uint8Array (byte array)
 function blake2bUpdate (ctx, input) {
-  for (var i = 0; i < input.length; i++) {
-    if (ctx.c === 128) { // buffer full ?
+  for (let i = 0; i < input.length; i++) {
+    if (ctx.c === 128) {
+      // buffer full ?
       ctx.t += ctx.c // add counters
       blake2bCompress(ctx, false) // compress (not last)
       ctx.c = 0 // counter to zero
@@ -219,14 +413,15 @@ function blake2bUpdate (ctx, input) {
 function blake2bFinal (ctx) {
   ctx.t += ctx.c // mark last block offset
 
-  while (ctx.c < 128) { // fill up with zeros
+  while (ctx.c < 128) {
+    // fill up with zeros
     ctx.b[ctx.c++] = 0
   }
   blake2bCompress(ctx, true) // final block flag = 1
 
   // little endian convert and store
-  var out = new Uint8Array(ctx.outlen)
-  for (var i = 0; i < ctx.outlen; i++) {
+  const out = new Uint8Array(ctx.outlen)
+  for (let i = 0; i < ctx.outlen; i++) {
     out[i] = ctx.h[i >> 2] >> (8 * (i & 3))
   }
   return out
@@ -246,7 +441,7 @@ function blake2b (input, key, outlen) {
   input = util.normalizeInput(input)
 
   // do the math
-  var ctx = blake2bInit(outlen, key)
+  const ctx = blake2bInit(outlen, key)
   blake2bUpdate(ctx, input)
   return blake2bFinal(ctx)
 }
@@ -260,7 +455,7 @@ function blake2b (input, key, outlen) {
 // - key - optional key Uint8Array, up to 64 bytes
 // - outlen - optional output length in bytes, default 64
 function blake2bHex (input, key, outlen) {
-  var output = blake2b(input, key, outlen)
+  const output = blake2b(input, key, outlen)
   return util.toHex(output)
 }
 
