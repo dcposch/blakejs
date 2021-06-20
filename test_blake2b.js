@@ -1,9 +1,9 @@
-var test = require('tape')
-var blake2b = require('./blake2b')
-var util = require('./util')
-var fs = require('fs')
+const test = require('tape')
+const blake2b = require('./blake2b')
+const util = require('./util')
+const fs = require('fs')
 
-var blake2bHex = blake2b.blake2bHex
+const blake2bHex = blake2b.blake2bHex
 
 test('BLAKE2b basic', function (t) {
   // From the example computation in the RFC
@@ -31,16 +31,16 @@ test('Input types', function (t) {
 })
 
 test('BLAKE2b generated test vectors', function (t) {
-  var contents = fs.readFileSync('generated_test_vectors.txt', 'utf8')
+  const contents = fs.readFileSync('generated_test_vectors.txt', 'utf8')
   contents.split('\n').forEach(function (line) {
     if (line.length === 0) {
       return
     }
-    var parts = line.split('\t')
-    var inputHex = parts[0]
-    var keyHex = parts[1]
-    var outLen = parts[2]
-    var outHex = parts[3]
+    const parts = line.split('\t')
+    const inputHex = parts[0]
+    const keyHex = parts[1]
+    const outLen = parts[2]
+    const outHex = parts[3]
 
     t.equal(blake2bHex(hexToBytes(inputHex), hexToBytes(keyHex), outLen), outHex)
   })
@@ -48,8 +48,8 @@ test('BLAKE2b generated test vectors', function (t) {
 })
 
 test('BLAKE2b performance', function (t) {
-  var N = 1 << 22 // number of bytes to hash
-  var RUNS = 3 // how often to repeat, to allow JIT to finish
+  const N = 1 << 22 // number of bytes to hash
+  const RUNS = 3 // how often to repeat, to allow JIT to finish
 
   console.log('Benchmarking BLAKE2b(' + (N >> 20) + ' MB input)')
   util.testSpeed(blake2bHex, N, RUNS)
@@ -57,16 +57,16 @@ test('BLAKE2b performance', function (t) {
 })
 
 test('Byte counter should support values up to 2**53', function (t) {
-  var testCases = [
-    {t: 1, a0: 1, a1: 0},
-    {t: 0xffffffff, a0: 0xffffffff, a1: 0},
-    {t: 0x100000000, a0: 0, a1: 1},
-    {t: 0x123456789abcd, a0: 0x6789abcd, a1: 0x12345},
+  const testCases = [
+    { t: 1, a0: 1, a1: 0 },
+    { t: 0xffffffff, a0: 0xffffffff, a1: 0 },
+    { t: 0x100000000, a0: 0, a1: 1 },
+    { t: 0x123456789abcd, a0: 0x6789abcd, a1: 0x12345 },
     // test 2**53 - 1
-    {t: 0x1fffffffffffff, a0: 0xffffffff, a1: 0x1fffff}]
+    { t: 0x1fffffffffffff, a0: 0xffffffff, a1: 0x1fffff }]
 
   testCases.forEach(function (testCase) {
-    var arr = new Uint32Array([0, 0])
+    const arr = new Uint32Array([0, 0])
 
     // test the code that's inlined in both blake2s.js and blake2b.js
     // to make sure it splits byte counters up to 2**53 into uint32s correctly
@@ -80,8 +80,8 @@ test('Byte counter should support values up to 2**53', function (t) {
 })
 
 function hexToBytes (hex) {
-  var ret = new Uint8Array(hex.length / 2)
-  for (var i = 0; i < ret.length; i++) {
+  const ret = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < ret.length; i++) {
     ret[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
   }
   return ret
