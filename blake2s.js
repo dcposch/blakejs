@@ -104,7 +104,7 @@ function blake2sInit (outlen, key) {
 
   var ctx = {
     h: new Uint32Array(BLAKE2S_IV), // hash state
-    b: new Uint32Array(64), // input block
+    b: new Uint8Array(64), // input block
     c: 0, // pointer within block
     t: 0, // input count
     outlen: outlen // output length in bytes
