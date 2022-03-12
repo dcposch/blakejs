@@ -5,10 +5,9 @@ function normalizeInput (input) {
   let ret
   if (input instanceof Uint8Array) {
     ret = input
-  } else if (input instanceof Buffer) {
-    ret = new Uint8Array(input)
   } else if (typeof input === 'string') {
-    ret = new Uint8Array(Buffer.from(input, 'utf8'))
+    const encoder = new TextEncoder()
+    ret = encoder.encode(input)
   } else {
     throw new Error(ERROR_MSG_INPUT)
   }
