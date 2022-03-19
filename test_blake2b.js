@@ -19,6 +19,11 @@ test('BLAKE2b basic', function (t) {
     'a8add4bdddfd93e4877d2746e62817b116364a1fa7bc148d95090bc7333b3673' +
     'f82401cf7aa2e4cb1ecd90296e3f14cb5413f8ed77be73045b13914cdcd6a918')
 
+  // with personal
+  t.equal(blake2bHex('abc', null, null, 'salt123456789012', 'personal12345678'),
+    'f6860a4cb1baadf6e3cc36c81b974d1167fbcd36dfbe55f3c2a561ab1863fb3d' +
+    '2afc40ea9a95c3ad46f100e2a65c3a3b841d616fda1ea45b47074baccfe3b644')
+
   t.end()
 })
 
