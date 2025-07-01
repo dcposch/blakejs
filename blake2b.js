@@ -238,6 +238,9 @@ function blake2bInit (outlen, key, salt, personal) {
   if (outlen === 0 || outlen > 64) {
     throw new Error('Illegal output length, expected 0 < length <= 64')
   }
+  if (key && !(key instanceof Uint8Array)) {
+    throw new Error(`Illegal key, expected Uint8Array with 0 < length <= 64, got ${typeof key}`)
+  }
   if (key && key.length > 64) {
     throw new Error('Illegal key, expected Uint8Array with 0 < length <= 64')
   }

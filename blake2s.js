@@ -258,6 +258,9 @@ function blake2sInit (outlen, key) {
   if (!(outlen > 0 && outlen <= 32)) {
     throw new Error('Incorrect output length, should be in [1, 32]')
   }
+  if (key && !(key instanceof Uint8Array)) {
+    throw new Error(`Illegal key, expected Uint8Array with 0 < length <= 32, got ${typeof key}`)
+  }
   const keylen = key ? key.length : 0
   if (key && !(keylen > 0 && keylen <= 32)) {
     throw new Error('Incorrect key length, should be in [1, 32]')

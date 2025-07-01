@@ -70,6 +70,23 @@ function generateInput (len, seed) {
   return out
 }
 
+test('Does not accept non-Uint8 data as "key" parameter', function (t) {
+  t.throws(() => {
+    blake2sHex('The quick brown fox jumps over the lazy dog', 'aStringKey')
+  },
+  /Illegal key, expected Uint8Array with 0 < length <= 32, got string/
+  )
+
+  t.throws(() => {
+    const nonUint8Array = ['nonSensicalValue']
+    blake2sHex('The quick brown fox jumps over the lazy dog', nonUint8Array)
+  },
+  'Illegal key, expected Uint8Array with 0 < length <= 32, got array'
+  )
+
+  t.end()
+})
+
 test('BLAKE2s performance', function (t) {
   const N = 1 << 22 // number of bytes to hash
   const RUNS = 3 // how often to repeat, to allow JIT to finish
